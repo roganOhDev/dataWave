@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from deprecated import deprecated
 
 @dataclass
-@deprecated(version='1.0.0', reaseon = "duplicated")
+@deprecated(version='1.0.0', reason = "duplicated")
 class dag_info:
     yesterday: date = date.date.today() - date.timedelta(1)
     airflow_home: str = None

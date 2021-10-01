@@ -1,10 +1,11 @@
+from datetime import datetime
 import datetime as date
 
 from pydantic import BaseModel
 
 
-class dag_info_dto(BaseModel):
-    yesterday: date = date.date.today() - date.timedelta(1)
+class DagInfo(BaseModel):
+    yesterday: datetime = datetime.today() - date.timedelta(1)
     airflow_home: str = None
     backend_url: str = ''
     dag_id: str = None

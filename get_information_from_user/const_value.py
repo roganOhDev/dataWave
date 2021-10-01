@@ -20,8 +20,7 @@ def error_dag_id_exists(name):
 
 
 class about_querypie_elt:
-    welcome = "Welcome rogan's ELT TOOL\nplease make inputs first for your ELT"
-    about_dag_id = "Please write your job name"
+    welcome = "Welcome rogan's ELT TOOL"
     about_schedule_interval = "schedule_interval :you must write on cron like * * * * *"
     about_db_type = "db_type :you can choose in mysql postgresql snowflake redshift "
     about_upsert_rule = "upsert_rule : you can choose in truncate, increasement, merge"

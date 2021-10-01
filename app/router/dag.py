@@ -1,14 +1,13 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from fastapi.encoders import jsonable_encoder
 
-from app.dto.dag import dag_info_dto
 from app.domain.dag import dag_composite_service as composite_service
+from app.dto.dag import daginfo
 
 router = APIRouter()
 
 
-# 새로운건 post default put update patch
-
-@router.put("/dag/init", response_model=dag_info_dto.dag_info_dto)
-def init_dag():
-    composite_service.get_dag_info()
-
+@router.put("/dag/init", response_model=daginfo.DagInfo)
+def init_dag(request: daginfo.DagInfo):
+    item = jsonable_encoder(request)
+    composite_service.get_dag_info(item)
