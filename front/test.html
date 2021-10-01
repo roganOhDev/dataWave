@@ -1,0 +1,34 @@
+<!DOCTYPE html> 
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>DataWave</title>
+</head>
+
+<body>
+<h1>DataWave</h1>
+
+  <script type="text/javascript" src="test.js"></script>
+  <select name="dbType" onchange="func(this.value)"> 
+      <option value="default">DEFAULT</option>
+      <option value="mysql">MYSQL</option>
+      <option value="snowflake">SNOWFLAKE</option>
+      <option value="redshit">REDSHIFT</option>
+      <option value="postgresql">POSTGRESQL</option>
+  </select><br>
+
+      <script>
+      function func(dbType){
+        if(dbType == "MYSQL")
+	       var host = prompt( 'host', '' );
+	       var port = prompt( 'port', '' );
+      }
+        esle if(dbType == "SNOWFLAKE");
+        var rule = prompt('rule',)
+      </script>
+
+
+</body>
+
+</html>
