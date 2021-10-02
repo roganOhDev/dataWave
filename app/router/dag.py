@@ -8,4 +8,4 @@ router = APIRouter()
 
 @router.put("/dag/init", response_model=dag_info_dto.DagInfoDto)
 def init_dag(request: dag_info_dto.DagInfoDto):
-    composite_service.dag_info(request)
+    composite_service.save(request)
