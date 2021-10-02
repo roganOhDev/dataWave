@@ -22,12 +22,12 @@ After this code runs, a python file for elt will be made.
 """
 import sqlalchemy as sql
 
-from app.domain.dag.dag_composite_service import get_dag_info
+from app.domain.dag.dag_composite_service import dag_info
 from get_information_from_user.get_db_info import get_db_info
 from get_information_from_user.make_a_dag import make_a_dag
 from get_information_from_user.manage_users_tables import make_tables_to_replicate, metadata_to_sql
 
-dag = get_dag_info()
+dag = dag_info()
 engine = sql.create_engine(dag.backend_url)
 integrate_metadata, integrate_db_type = get_db_info(dag, 'extract')
 tables_to_replicate = make_tables_to_replicate(integrate_db_type, dag.dag_id)

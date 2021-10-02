@@ -1,15 +1,17 @@
 import datetime as date
+from datetime import datetime
 
 from pydantic import BaseModel
 
 
-class dag_info_dto(BaseModel):
-    yesterday: date = date.date.today() - date.timedelta(1)
-    airflow_home: str = None
+class DagInfoDto(BaseModel):
+    yesterday: datetime = datetime.today() - date.timedelta(1)
+    airflow_home: str = ''
     backend_url: str = ''
-    dag_id: str = None
-    owner: str = 'chequer'
-    start_date: str = None
-    catchup = 'False'
-    schedule_interval: str = '@once'
-    csv_files_directory: str = None
+    dag_id: str
+    owner: str = 'data_wave'
+    start_date: str = '({year},{month},{day})'.format(year=yesterday.year, month=yesterday.month,
+                                                      day=yesterday.day)
+    catchup: str = 'False'
+    schedule_interval: str = "@once"
+    csv_files_directory: str = ""
