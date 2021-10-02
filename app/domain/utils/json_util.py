@@ -9,7 +9,7 @@ def json(data):
 
 def json_default(value):
     if isinstance(value, datetime.datetime):
-        return value.strftime('%Y-%m-%d')
+        return value.strftime('%Y-%m-%d %H:%M:%S')
     raise TypeException(value.__annotations__ + ' : not JSON serializable')
 
 def loads(value):
