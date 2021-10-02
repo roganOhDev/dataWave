@@ -10,4 +10,4 @@ router = APIRouter()
 @router.put("/dag/init", response_model=dag_info_dto.DagInfoDto)
 def init_dag(request: dag_info_dto.DagInfoDto):
     item = jsonable_encoder(request)
-    composite_service.get_dag_info(item)
+    composite_service.dag_info(item)
