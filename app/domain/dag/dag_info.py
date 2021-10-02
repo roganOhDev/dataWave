@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from app.domain.utils.uuid_util import uuid
-from app.dto.dag.dag_info_dto import DagInfoDto
+from app.dto.dag_info_dto import DagInfoDto
 
 
 class DagInfo:

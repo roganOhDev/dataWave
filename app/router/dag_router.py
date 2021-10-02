@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.domain.dag import dag_composite_service as composite_service
-from app.dto.dag import dag_info_dto
+from app.dto import dag_info_dto
 
 router = APIRouter()
 
