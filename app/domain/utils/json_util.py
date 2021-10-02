@@ -11,3 +11,6 @@ def json_default(value):
     if isinstance(value, datetime.datetime):
         return value.strftime('%Y-%m-%d')
     raise TypeException(value.__annotations__ + ' : not JSON serializable')
+
+def loads(value):
+    return base_json.loads(value)

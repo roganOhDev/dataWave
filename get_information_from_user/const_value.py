@@ -15,9 +15,6 @@ class error_message:
 def error_no_value(thing): print("you should write {thing}".format(thing=thing))
 
 
-def error_dag_id_exists(name):
-    print('job_name: {name} is exist. job name must be primary key. please write other job name'.foramt(name=name))
-
 
 class about_querypie_elt:
     welcome = "Welcome rogan's ELT TOOL"
