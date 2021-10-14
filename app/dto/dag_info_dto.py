@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 class DagInfoDto(BaseModel):
     yesterday: datetime = datetime.today() - date.timedelta(1)
+    uuid: str = ''
     airflow_home: str = ''
     backend_url: str = ''
     dag_id: str
