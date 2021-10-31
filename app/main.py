@@ -1,14 +1,16 @@
 import uvicorn
 from fastapi import FastAPI
 
-from app.router import dag_router
+from app.common.database import db
 from app.router import connection_router
+from app.router import dag_router
 from get_information_from_user.const_value import about_querypie_elt
 
 
 def create_app():
     app = FastAPI()
 
+    db.init_app(app)
     add_router(app)
     return app
 

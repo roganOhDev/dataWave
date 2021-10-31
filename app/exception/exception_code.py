@@ -4,6 +4,7 @@ class ExceptionCode:
 
     class dag:
         ALREADY_EXITS_DAG_ID = "DWS-0100"
+        DAG_NOT_FOUND = "DWS-0101"
 
     class connection:
         ALREADY_EXITS_CONNECTION_NAME = "DWS-0200"
