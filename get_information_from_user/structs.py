@@ -17,6 +17,7 @@ class dag_info:
 
 
 @dataclass
+@deprecated(version='1.0.0', reason = "duplicated")
 class db_info:
     db_type: int = None
     host: str = None

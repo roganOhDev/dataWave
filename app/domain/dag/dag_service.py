@@ -2,6 +2,7 @@ import pandas as pd
 
 from app.domain.utils import json_util
 from app.domain.utils import os_util
+from app.exception.dag_not_found_exception import DagNotFoundException
 
 
 def pwd():
@@ -11,6 +12,19 @@ def pwd():
 def save(data):
     with open(pwd(), 'a', encoding="utf-8") as f:
         f.write(data + '\n')
+        f.close()
+
+def find(uuid: str):
+    with open(pwd(), 'r', encoding="utf-8") as f:
+        lines = f.readlines()
+        for line in lines:
+            if json_util.loads(line)['uuid'] == uuid:
+                return line
+            raise DagNotFoundException
+        f.close()
+
+def delete(uuid: str):
+    with open(pwd(), 'w', encoding="utf-8") as f:
         f.close()
 
 
