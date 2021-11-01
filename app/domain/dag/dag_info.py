@@ -18,6 +18,6 @@ class DagInfo(Base):
     schedule_interval = Column(String, default="@once", nullable=False)
     csv_files_directory = Column(String, default="@once", nullable=False)
     yesterday = Column(Date, nullable=False)
-    start_date = Column(Date, nullable=False)
+    start_date = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
     updated_at = Column(DateTime, default=datetime.now(), nullable=False)
