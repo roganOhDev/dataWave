@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from sqlalchemy.orm import Session
 
@@ -7,8 +8,8 @@ from app.domain.dag.dag_info import DagInfo
 from app.domain.os.get_pwd import *
 from app.dto import dag_info_dto
 from app.exception.already_exists_dag_id_exception import AlreadyExistsDagIdException
-from get_information_from_user.const_value import *
 from app.exception.dag_not_found_exception import DagNotFoundException
+from get_information_from_user.const_value import *
 
 
 def save(request: dag_info_dto.DagCreateDto, session: Session):
@@ -37,7 +38,7 @@ def find(uuid: str, session: Session) -> dag_info_dto.DagInfoDto:
     return dag_info_dto.of(dag)
 
 
-def delete(uuids: [], session: Session):
+def delete(uuids: List[str], session: Session):
     for uuid in uuids:
         service.delete(uuid, session)
 
