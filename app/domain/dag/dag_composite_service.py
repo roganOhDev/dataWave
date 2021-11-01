@@ -9,7 +9,6 @@ from app.domain.os.get_pwd import *
 from app.dto import dag_info_dto
 from app.exception.already_exists_dag_id_exception import AlreadyExistsDagIdException
 from app.exception.dag_not_found_exception import DagNotFoundException
-from get_information_from_user.const_value import *
 
 
 def save(request: dag_info_dto.DagCreateDto, session: Session):
@@ -62,21 +61,6 @@ def dag_info(request: dag_info_dto.DagCreateDto, session: Session):
 def validate_dag_id(dag_id: str, session: Session):
     if service.is_exist_dag_id(dag_id, session):
         raise AlreadyExistsDagIdException()
-
-
-def get_dag_id_for_python(engine):
-    while True:
-        dag_id, useable = validate_dag_id(engine)
-        if useable:
-            break
-        print(error_message.unuseable_dag_id)
-    return dag_id
-
-
-def optional_or_else(data: str):
-    if data.__eq__(None) | (not data):
-        return ''
-    return data
 
 
 def validate(dag: DagInfo):
