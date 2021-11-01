@@ -1,30 +1,23 @@
 from datetime import datetime
 
-from app.domain.utils.uuid_util import uuid
-from app.dto.dag_info_dto import DagInfoDto
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Date
+
+from app.common.database import Base
+from app.domain.utils import uuid_util
 
 
-class DagInfo:
-    def __init__(self, request: DagInfoDto):
-        self.uuid: str = uuid()
-        self.yesterday: datetime
-        self.airflow_home: str
-        self.airflow_home: str
-        self.backend_url: str
-        self.dag_id: str
-        self.owner: str
-        self.start_date: str
-        self.catchup: str
-        self.schedule_interval: str
-        self.csv_files_directory: str
-        self.created_at: datetime = datetime.now()
-        if request is not None:
-            self.yesterday = request.yesterday
-            self.airflow_home = request.airflow_home
-            self.backend_url = request.backend_url
-            self.dag_id = request.dag_id
-            self.owner = request.owner
-            self.start_date = request.start_date
-            self.catchup = request.catchup
-            self.schedule_interval = request.schedule_interval
-            self.csv_files_directory = request.csv_files_directory
+class DagInfo(Base):
+    __tablename__ = "dag_infoes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    uuid = Column(String, default=uuid_util.uuid())
+    dag_id = Column(String, nullable=False)
+    airflow_home = Column(String, nullable=False)
+    owner = Column(String, default="Rogan")
+    catchup = Column(Boolean, default=False)
+    schedule_interval = Column(String, default="@once", nullable=False)
+    csv_files_directory = Column(String, default="@once", nullable=False)
+    yesterday = Column(Date, nullable=False)
+    start_date = Column(Date, nullable=False)
+    created_at = Column(DateTime, default=datetime.now(), nullable=False)
+    updated_at = Column(DateTime, default=datetime.now(), nullable=False)

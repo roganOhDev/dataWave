@@ -21,5 +21,5 @@ class Connection(Base):
     warehouse = Column(String)
     option = Column(String, default="?charset=utf8")
     role = Column(String)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now(), nullable=False)
+    updated_at = Column(DateTime, default=datetime.now(), nullable=False)
