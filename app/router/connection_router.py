@@ -12,8 +12,8 @@ router = APIRouter()
 
 
 @router.put("/connection", response_model=ConnectionDto)
-def create(request: BaseConnectionDto):
-    composite_service.save(request)
+def create(request: BaseConnectionDto, session: Session = Depends(db.session):
+    composite_service.save(request, session)
 
 
 @router.put("/connection", response_model=ConnectionDto)

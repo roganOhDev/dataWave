@@ -10,6 +10,7 @@ from app.dto import connection_dto
 from app.exception.already_exists_connection_name import AlreadyExitsConnectionName
 from app.exception.connection_not_found_exception import ConnectionNotFoundException
 from app.exception.empty_value_exception import EmptyValueException
+from app.exception.not_supported_db_type_exception import NotSupportedDbTypeException
 
 
 def save(request):
@@ -23,7 +24,7 @@ def save(request: connection_dto.BaseConnectionDto, session: Session):
 
 
 def update(uuid: str, request: connection_dto.BaseConnectionDto, session: Session):
-    connection = service.find(uuid, session)
+    connection = service.find(uuid, session, True)
     validate_connection_name(request.name, session)
 
     connection.name = connection.name if not request.name else request.name
@@ -41,9 +42,8 @@ def update(uuid: str, request: connection_dto.BaseConnectionDto, session: Sessio
     service.save(connection, session)
 
 
-def find(uuid: str, session: Session) -> Connection:
-    dag = service.find(uuid, session)
-    validate(dag)
+def find(uuid: str, session: Session) -> connection_dto.ConnectionDto:
+    dag = service.find(uuid, session, True)
     return connection_dto.of(dag)
 
 
@@ -74,17 +74,12 @@ def validate_connection_name(connection_name: str, session: Session):
         raise AlreadyExitsConnectionName()
 
 
-def validate(dag: Connection):
-    if dag is None:
+def validate(connection: Connection):
+    if connection is None:
         raise ConnectionNotFoundException()
-
-
-def validate(request: Connection):
-    if service.is_exist(request.name):
-        raise AlreadyExitsConnectionName()
-    elif request.db_type in (db_type.DbType.MYSQL.name, db_type.DbType.REDSHIFT.name, db_type.DbType.POSTGRESQL.name):
-        if (not request.host) | (not request.port):
-            raise EmptyValueException()
-    elif request.db_type is db_type.DbType.SNOWFLAKE.name:
-        if not request.account:
+    elif connection.db_type not in (
+            db_type.DbType.MYSQL.name, db_type.DbType.REDSHIFT.name, db_type.DbType.POSTGRESQL.name):
+        raise NotSupportedDbTypeException()
+    elif connection.db_type is db_type.DbType.SNOWFLAKE.name:
+        if not connection.account:
             raise EmptyValueException()
