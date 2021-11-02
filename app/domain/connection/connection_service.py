@@ -15,7 +15,7 @@ def find_by_dag_id(connection_name: str, session: Session) -> Connection:
 def find(uuid: str, session: Session, validate: bool) -> Connection:
     connection = session.query(Connection).filter(Connection.uuid == uuid).first()
     if validate & (not connection):
-        raise ConnectionNotFoundException
+        raise ConnectionNotFoundException()
     return connection
 
 

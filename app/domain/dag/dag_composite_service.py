@@ -8,7 +8,6 @@ from app.domain.dag.dag_info import DagInfo
 from app.domain.os.get_pwd import *
 from app.dto import dag_info_dto
 from app.exception.already_exists_dag_id_exception import AlreadyExistsDagIdException
-from app.exception.dag_not_found_exception import DagNotFoundException
 
 
 def save(request: dag_info_dto.DagCreateDto, session: Session):
@@ -17,8 +16,8 @@ def save(request: dag_info_dto.DagCreateDto, session: Session):
 
 
 def update(uuid: str, request: dag_info_dto.DagUpdateDto, session: Session):
-    dag = service.find(uuid, session,True)
-    validate_dag_id(request.dag_id, session)
+    dag = service.find(uuid, session, True)
+    validate_dag_id(request.dag_id, dag.id, False, session)
 
     dag.dag_id = dag.dag_id if not request.dag_id else request.dag_id
     dag.owner = dag.owner if not request.owner else request.owner
@@ -42,7 +41,7 @@ def delete(uuids: List[str], session: Session):
 
 
 def dag_info(request: dag_info_dto.DagCreateDto, session: Session):
-    validate_dag_id(request.dag_id, session)
+    validate_dag_id(request.dag_id, 0, True, session)
 
     dag = DagInfo()
     dag.dag_id = request.dag_id
@@ -57,9 +56,11 @@ def dag_info(request: dag_info_dto.DagCreateDto, session: Session):
     return dag
 
 
-def validate_dag_id(dag_id: str, session: Session):
-    if (dag_id is not "") & service.is_exist_dag_id(dag_id, session):
-        raise AlreadyExistsDagIdException()
-
-
-
+def validate_dag_id(dag_id: str, id: int, new: bool, session: Session):
+    if dag_id:
+        dags = service.find_all(dag_id, session)
+        if new:
+            if dags:
+                raise AlreadyExistsDagIdException()
+        elif len(dags) > 1 | (False if not dags is None else dags[0].id != id):
+            raise AlreadyExistsDagIdException()

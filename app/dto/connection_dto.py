@@ -5,20 +5,20 @@ from app.domain.connection.connection import Connection
 
 
 class BaseConnectionDto(BaseModel):
-    name: str = ''
-    db_type: str = ''
-    host: str = ''
-    port: str = ''
+    name: str
+    db_type: str
+    host: str
+    port:str
     account: str = ''
-    login_id: str = ''
-    password: str = ''
+    login_id: str
+    password: str
     warehouse: str = ''
     option: str = ''
     role: str = ''
 
 class ConnectionDto(BaseConnectionDto):
     id: int = None
-    uuid: str = ''
+    uuid: str = None
     created_at: datetime = None
     updated_at: datetime = None
 

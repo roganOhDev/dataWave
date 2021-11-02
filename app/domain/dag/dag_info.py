@@ -9,8 +9,8 @@ from app.domain.utils import uuid_util
 class DagInfo(Base):
     __tablename__ = "dag_infoes"
 
-    id = Column(Integer, primary_key=True, index=True)
-    uuid = Column(String, default=uuid_util.uuid())
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    uuid = Column(String, unique=True, default=uuid_util.uuid())
     dag_id = Column(String, nullable=False)
     airflow_home = Column(String, nullable=False)
     owner = Column(String, default="Rogan")

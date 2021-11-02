@@ -7,25 +7,19 @@ from app.domain.connection import connection_service as service
 from app.domain.connection import db_type
 from app.domain.connection.connection import Connection
 from app.dto import connection_dto
-from app.exception.already_exists_connection_name import AlreadyExitsConnectionName
 from app.exception.connection_not_found_exception import ConnectionNotFoundException
 from app.exception.empty_value_exception import EmptyValueException
 from app.exception.not_supported_db_type_exception import NotSupportedDbTypeException
 
 
-def save(request):
-    connection = Connection(request)
-    validate(connection)
-
-
 def save(request: connection_dto.BaseConnectionDto, session: Session):
-    connection = connection_info(request, session)
+    connection = connection_info(request)
+    validate(connection)
     service.save(connection, session)
 
 
 def update(uuid: str, request: connection_dto.BaseConnectionDto, session: Session):
     connection = service.find(uuid, session, True)
-    validate_connection_name(request.name, session)
 
     connection.name = connection.name if not request.name else request.name
     connection.db_type = connection.db_type if not request.db_type else request.db_type
@@ -52,9 +46,7 @@ def delete(uuids: List[str], session: Session):
         service.delete(uuid, session)
 
 
-def connection_info(request: connection_dto.BaseConnectionDto, session: Session) -> Connection:
-    validate_connection_name(request.name, session)
-
+def connection_info(request: connection_dto.BaseConnectionDto) -> Connection:
     connection = Connection()
     connection.name = request.name
     connection.db_type = request.db_type
@@ -67,11 +59,6 @@ def connection_info(request: connection_dto.BaseConnectionDto, session: Session)
     connection.option = connection.option if not request.option else request.option
     connection.role = "" if not request.role else request.role
     return connection
-
-
-def validate_connection_name(connection_name: str, session: Session):
-    if (connection_name is not "") & service.is_exist_connection_name(connection_name, session):
-        raise AlreadyExitsConnectionName()
 
 
 def validate(connection: Connection):
