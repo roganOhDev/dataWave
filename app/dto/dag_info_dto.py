@@ -19,7 +19,7 @@ class DagCreateDto(BaseModel):
 
 class DagUpdateDto(BaseModel):
     yesterday: datetime = datetime.today() - date.timedelta(1)
-    dag_id: str
+    dag_id: str = ''
     owner: str = ''
     start_date: str = ''
     catchup: bool = None

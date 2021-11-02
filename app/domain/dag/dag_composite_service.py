@@ -17,10 +17,10 @@ def save(request: dag_info_dto.DagCreateDto, session: Session):
 
 
 def update(uuid: str, request: dag_info_dto.DagUpdateDto, session: Session):
+    dag = service.find(uuid, session,True)
     validate_dag_id(request.dag_id, session)
 
-    dag = service.find(uuid, session)
-    dag.dag_id = request.dag_id
+    dag.dag_id = dag.dag_id if not request.dag_id else request.dag_id
     dag.owner = dag.owner if not request.owner else request.owner
     dag.start_date = dag.start_date if not request.start_date else request.start_date
     dag.catchup = dag.catchup if not request.catchup else request.catchup
@@ -32,8 +32,7 @@ def update(uuid: str, request: dag_info_dto.DagUpdateDto, session: Session):
 
 
 def find(uuid: str, session: Session) -> dag_info_dto.DagInfoDto:
-    dag = service.find(uuid, session)
-    validate(dag)
+    dag = service.find(uuid, session, True)
     return dag_info_dto.of(dag)
 
 
@@ -59,10 +58,8 @@ def dag_info(request: dag_info_dto.DagCreateDto, session: Session):
 
 
 def validate_dag_id(dag_id: str, session: Session):
-    if service.is_exist_dag_id(dag_id, session):
+    if (dag_id is not "") & service.is_exist_dag_id(dag_id, session):
         raise AlreadyExistsDagIdException()
 
 
-def validate(dag: DagInfo):
-    if dag is None:
-        yield DagNotFoundException()
+

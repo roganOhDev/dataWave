@@ -1,24 +1,33 @@
-import pandas as pd
+from sqlalchemy.orm import Session
 
-from app.domain.utils import json_util
-from app.domain.utils import os_util
-
-
-def pwd():
-    return os_util.before_abs_pwd_with_join(__file__, "entity/connections.txt", 4)
+from app.domain.connection.connection import Connection
+from app.exception.connection_not_found_exception import ConnectionNotFoundException
 
 
-def save(data):
-    with open(pwd(), 'a', encoding="utf-8") as f:
-        f.write(data + '\n')
-        f.close()
+def is_exist_connection_name(connection_name: str, session: Session) -> bool:
+    return True if find_by_dag_id(connection_name, session) is not None else False
 
 
-def is_exist(name: str):
-    with open(pwd(), 'r', encoding="utf-8") as f:
-        lines = f.readlines()
-        for line in lines:
-            if json_util.loads(line)['name'] == name:
-                return True
-        f.close()
-    return False
+def find_by_dag_id(connection_name: str, session: Session) -> Connection:
+    return session.query(Connection).filter(Connection.name == connection_name).first()
+
+
+def find(uuid: str, session: Session, validate: bool) -> Connection:
+    connection = session.query(Connection).filter(Connection.uuid == uuid).first()
+    if validate & (not connection):
+        raise ConnectionNotFoundException
+    return connection
+
+
+def delete(uuid: str, session: Session):
+    connection = session.query(Connection).filter(Connection.uuid == uuid).first()
+    if not connection:
+        raise ConnectionNotFoundException()
+    session.delete(connection)
+    session.commit()
+
+
+def save(connection: Connection, session: Session):
+    session.add(connection)
+    session.commit()
+    session.refresh(connection)

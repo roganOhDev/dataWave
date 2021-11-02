@@ -12,8 +12,11 @@ def find_by_dag_id(dag_id: str, session: Session) -> DagInfo:
     return session.query(DagInfo).filter(DagInfo.dag_id == dag_id).first()
 
 
-def find(uuid: str, session: Session) -> DagInfo:
-    return session.query(DagInfo).filter(DagInfo.uuid == uuid).first()
+def find(uuid: str, session: Session, validate: bool) -> DagInfo:
+    dag = session.query(DagInfo).filter(DagInfo.uuid == uuid).first()
+    if validate & (not dag):
+        raise DagNotFoundException
+    return dag
 
 
 def delete(uuid: str, session: Session):
