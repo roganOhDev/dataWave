@@ -11,14 +11,14 @@ from app.dto import dag_info_dto
 router = APIRouter()
 
 
-@router.put("/dag/save")
+@router.put("/dag")
 def create(request: dag_info_dto.DagCreateDto, session: Session = Depends(db.session)):
     return Response(content=composite_service.save(request, session), media_type="application/json")
 
 
-@router.put("/dag/update", response_model=dag_info_dto.DagUpdateDto)
-def update(request: dag_info_dto.DagUpdateDto, session: Session = Depends(db.session)):
-    return Response(content=composite_service.update(request, session), media_type="application/json")
+@router.put("/dag", response_model=dag_info_dto.DagUpdateDto)
+def update(uuid: str, request: dag_info_dto.DagUpdateDto, session: Session = Depends(db.session)):
+    return Response(content=composite_service.update(uuid, request, session), media_type="application/json")
 
 
 @router.get("/dag", response_model=dag_info_dto.DagInfoDto)

@@ -16,10 +16,10 @@ def save(request: dag_info_dto.DagCreateDto, session: Session):
     service.save(dag, session)
 
 
-def update(request: dag_info_dto.DagUpdateDto, session: Session):
+def update(uuid: str, request: dag_info_dto.DagUpdateDto, session: Session):
     validate_dag_id(request.dag_id, session)
 
-    dag = service.find(request.uuid, session)
+    dag = service.find(uuid, session)
     dag.dag_id = request.dag_id
     dag.owner = dag.owner if not request.owner else request.owner
     dag.start_date = dag.start_date if not request.start_date else request.start_date
