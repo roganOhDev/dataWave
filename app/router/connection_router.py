@@ -9,7 +9,7 @@ from app.dto.connection_dto import ConnectionDto
 router = APIRouter()
 
 
-@router.put("/connection/create", response_model=ConnectionDto)
+@router.put("/connection", response_model=ConnectionDto)
 def init_dag(request: ConnectionDto):
     composite_service.save(request)
 
