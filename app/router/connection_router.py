@@ -20,7 +20,6 @@ def update(uuid: str, request: BaseConnectionDto, session: Session = Depends(db.
     return Response(content=composite_service.update(uuid, request, session), media_type="application/json")
 
 
-
 @router.get("/connection", response_model=ConnectionDto)
 def find(uuid: str, session: Session = Depends(db.session)):
     return composite_service.find(uuid, session)
