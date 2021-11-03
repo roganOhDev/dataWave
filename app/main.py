@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.base import BaseHTTPMiddleware
+from uvicorn.config import LOGGING_CONFIG
 
 from app.common.database import db
 from app.router import connection_router
@@ -27,5 +28,11 @@ def add_router(app):
 print(about_querypie_elt.welcome)
 app = create_app()
 
+
+def run():
+    LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s [%(name)s] %(levelprefix)s %(message)s"
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, use_colors=True)
+
+
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    run()
