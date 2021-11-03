@@ -1,10 +1,12 @@
 import uvicorn
 from fastapi import FastAPI
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.common.database import db
 from app.router import connection_router
 from app.router import dag_router
 from get_information_from_user.const_value import about_querypie_elt
+from middle.controller import dispatch
 
 
 def create_app():
@@ -12,12 +14,13 @@ def create_app():
 
     db.init_app(app)
     add_router(app)
+    app.add_middleware(middleware_class=BaseHTTPMiddleware, dispatch=dispatch)
     return app
 
 
 def add_router(app):
-    app.include_router(connection_router.router)
-    app.include_router(dag_router.router)
+    app.include_router(connection_router.router, prefix="/connection")
+    app.include_router(dag_router.router, prefix="/dag")
     return app
 
 
