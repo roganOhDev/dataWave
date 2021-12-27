@@ -27,5 +27,5 @@ def find(uuid: str, session: Session = Depends(db.session)):
 
 
 @router.delete("")
-def delete(uuids: List[str] = Query(None), session: Session = Depends(db.session)):
+async def find(uuids: List[str] = Query(None), session: Session = Depends(db.session)):
     composite_service.delete(uuids, session)

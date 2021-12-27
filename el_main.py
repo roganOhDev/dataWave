@@ -29,7 +29,8 @@ from get_information_from_user.manage_users_tables import make_tables_to_replica
 
 dag = dag_info()
 engine = sql.create_engine(dag.backend_url)
-integrate_metadata, integrate_db_type = get_db_info(dag, 'extract')
+integrate_metadata, integrate_db_type = get_db_info(dag, 'extract') # dag, connection 으로 다 만듬
+
 tables_to_replicate = make_tables_to_replicate(integrate_db_type, dag.dag_id)
 destination_metadata, destination_db_type = get_db_info(dag, 'load')
 metadata_to_sql(integrate_metadata, destination_metadata, tables_to_replicate, engine)
