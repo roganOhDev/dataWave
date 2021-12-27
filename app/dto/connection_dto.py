@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pydantic import BaseModel
 
 from app.domain.connection.connection import Connection
@@ -8,7 +9,7 @@ class BaseConnectionDto(BaseModel):
     name: str
     db_type: str
     host: str
-    port:str
+    port: str
     account: str = ''
     login_id: str
     password: str
@@ -16,13 +17,15 @@ class BaseConnectionDto(BaseModel):
     option: str = ''
     role: str = ''
 
+
 class ConnectionDto(BaseConnectionDto):
     id: int = None
     uuid: str = None
     created_at: datetime = None
     updated_at: datetime = None
 
-def of(connection : Connection) -> ConnectionDto:
+
+def of(connection: Connection) -> ConnectionDto:
     connection_dto = ConnectionDto()
     connection_dto.id = connection.id
     connection_dto.uuid = connection.uuid
@@ -37,5 +40,3 @@ def of(connection : Connection) -> ConnectionDto:
     connection_dto.option = connection.option
     connection_dto.role = connection.role
     return connection
-
-
