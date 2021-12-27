@@ -26,7 +26,7 @@ def update(uuid: str, request: connection_dto.BaseConnectionDto, session: Sessio
     connection.host = connection.host if not request.host else request.host
     connection.port = connection.port if not request.port else request.port
     connection.account = connection.account if not request.account else request.account
-    connection.login_id = connection.login_id if not request.login_id else request.login_id
+    connection.user = connection.user if not request.user else request.user
     connection.password = connection.password if not request.password else request.password
     connection.warehouse = connection.warehouse if not request.warehouse else request.warehouse
     connection.option = connection.option if not request.option else request.option
@@ -53,7 +53,7 @@ def connection_info(request: connection_dto.BaseConnectionDto) -> Connection:
     connection.host = "" if not request.host else request.host
     connection.port = "" if not request.port else request.port
     connection.account = "" if not request.account else request.account
-    connection.login_id = request.login_id
+    connection.user = request.user
     connection.password = request.password
     connection.warehouse = "" if not request.warehouse else request.warehouse
     connection.option = connection.option if not request.option else request.option
@@ -65,8 +65,8 @@ def validate(connection: Connection):
     if connection is None:
         raise ConnectionNotFoundException()
     elif connection.db_type not in (
-            db_type.DbType.MYSQL.name, db_type.DbType.REDSHIFT.name, db_type.DbType.POSTGRESQL.name):
+            db_type.Db_Type.MYSQL.name, db_type.Db_Type.REDSHIFT.name, db_type.Db_Type.POSTGRESQL.name):
         raise NotSupportedDbTypeException()
-    elif connection.db_type is db_type.DbType.SNOWFLAKE.name:
+    elif connection.db_type is db_type.Db_Type.SNOWFLAKE.name:
         if not connection.account:
             raise EmptyValueException()

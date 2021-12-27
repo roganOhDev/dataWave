@@ -1,66 +1,61 @@
-from datetime import datetime
 from typing import List
 
+import mysql.connector
 from sqlalchemy.orm import Session
 
-from app.domain.dag import dag_service as service
-from app.domain.dag.dag_infoes import DagInfo
-from app.domain.os.get_pwd import *
-from app.dto import dag_info_dto
-from app.exception.already_exists_dag_id_exception import AlreadyExistsDagIdException
+from app.domain.connection import connection_composite_service
+from app.domain.connection.db_type import Db_Type
+from app.domain.table import table_list_service
+from app.domain.table.table_list import Table_List
+from app.domain.utils.query import *
+from app.dto.table_list_dto import Table_List_Dto
+from app.exception.cannot_show_table import CannotShowTable
 
 
-def save(request: dag_info_dto.DagCreateDto, session: Session):
-    dag = dag_info(request, session)
-    service.save(dag, session)
+def table_list(request: Table_List_Dto) -> Table_List:
+    table_list = Table_List()
+    table_list.connection_uuid = request.connection_uuid
+    table_list.table_list = request.table_list
+    table_list.rule_set = request.rule_set
+    table_list.pk = request.pk
+
+    return table_list
 
 
-def update(uuid: str, request: dag_info_dto.DagUpdateDto, session: Session):
-    dag = service.find(uuid, session, True)
-    validate_dag_id(request.dag_id, dag.id, False, session)
-
-    dag.dag_id = dag.dag_id if not request.dag_id else request.dag_id
-    dag.owner = dag.owner if not request.owner else request.owner
-    dag.start_date = dag.start_date if not request.start_date else request.start_date
-    dag.catchup = dag.catchup if not request.catchup else request.catchup
-    dag.schedule_interval = dag.schedule_interval if not request.schedule_interval else request.schedule_interval
-    dag.csv_files_directory = dag.csv_files_directory if not request.csv_files_directory else request.csv_files_directory
-    dag.updated_at = datetime.now()
-
-    service.save(dag, session)
-
-
-def find(uuid: str, session: Session) -> dag_info_dto.DagInfoDto:
-    dag = service.find(uuid, session, True)
-    return dag_info_dto.of(dag)
+def create(request: Table_List_Dto, session: Session):
+    list = table_list(request)
+    table_list_service.save(list, session)
 
 
 def delete(uuids: List[str], session: Session):
     for uuid in uuids:
-        service.delete(uuid, session)
+        table_list = table_list_service.find(uuid, session)
+        if not table_list:
+            raise ConnectionNotFoundException()
+        table_list_service.delete(table_list, session)
 
 
-def dag_info(request: dag_info_dto.DagCreateDto, session: Session):
-    validate_dag_id(request.dag_id, 0, True, session)
-
-    dag = DagInfo()
-    dag.dag_id = request.dag_id
-    dag.owner = dag.owner if not request.owner else request.owner
-    dag.catchup = request.catchup
-    dag.schedule_interval = request.schedule_interval
-    dag.start_date = request.start_date
-    dag.yesterday = request.yesterday
-
-    dag.airflow_home, dag.backend_url = get_airflow_home_and_backend_url()
-    dag.csv_files_directory = def_csv_dir(dag.airflow_home)
-    return dag
+def find(uuid: str, session: Session) -> Table_List:
+    table_list_service.find(uuid, session, True)
 
 
-def validate_dag_id(dag_id: str, id: int, new: bool, session: Session):
-    if dag_id:
-        dags = service.find_all(dag_id, session)
-        if new:
-            if dags:
-                raise AlreadyExistsDagIdException()
-        elif len(dags) > 1 | (False if not dags is None else dags[0].id != id):
-            raise AlreadyExistsDagIdException()
+def find_tables(connection_uuid: str, session: Session) -> [str]:
+    connection = connection_composite_service.find(connection_uuid, session)
+    tables = []
+
+    if connection.db_type.__eq__(Db_Type.MYSQL.name):
+        try:
+            with mysql.connector.connect(host=connection.host, port=connection.port, database=connection.database,
+                                         user=connection.user, password=connection.password) as conn:
+
+                cursor = conn.cursor()
+                sql = Mysql.show_tables
+                cursor.execute(sql)
+                results = cursor.fetchall()
+        except mysql.connector.Error as e:
+            raise CannotShowTable(e.msg)
+
+    for result in results:
+        tables.append(*result)
+
+    return tables

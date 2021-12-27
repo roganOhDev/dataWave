@@ -11,8 +11,9 @@ class BaseConnectionDto(BaseModel):
     host: str
     port: str
     account: str = ''
-    login_id: str
+    user: str
     password: str
+    database: str
     warehouse: str = ''
     option: str = ''
     role: str = ''
@@ -34,7 +35,7 @@ def of(connection: Connection) -> ConnectionDto:
     connection_dto.host = connection.host
     connection_dto.port = connection.port
     connection_dto.account = connection.account
-    connection_dto.login_id = connection.login_id
+    connection_dto.user = connection.user
     connection_dto.password = connection.password
     connection_dto.warehouse = connection.warehouse
     connection_dto.option = connection.option

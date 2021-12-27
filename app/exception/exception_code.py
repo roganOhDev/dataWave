@@ -10,3 +10,6 @@ class ExceptionCode:
         ALREADY_EXITS_CONNECTION_NAME = "DWS-0200"
         CONNECTION_NOT_FOUND = "DWS-0201"
         NOT_SUPPORTED_DB_TYPE = "DWS-0202"
+
+    class hook:
+        CANNOT_SHOW_TABLE = "DWS-0300"

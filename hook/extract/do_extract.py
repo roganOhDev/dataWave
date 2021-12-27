@@ -19,11 +19,12 @@ in every function
 
 import sqlalchemy as sql
 
-from querypie_el_ver2.get_information_from_user.structs import user_all_data
-from querypie_el_ver2.hook.extract.get_data_from_max_val import get_data_from_max_val
-from querypie_el_ver2.hook.extract.get_db_info import get_db_info
-from querypie_el_ver2.hook.extract.get_full_table import *
+from get_information_from_user.structs import user_all_data
+from hook.extract.get_data_from_max_val import get_data_from_max_val
+from hook.extract.get_db_info import get_db_info
+from hook.extract.get_full_table import *
 from get_information_from_user.make_a_dag import get_backend
+from hook.extract.get_full_table import get_full_table_amazon, get_full_table_snowflake
 
 backend_engine = sql.create_engine(get_backend())
 

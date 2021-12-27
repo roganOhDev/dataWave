@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class DbType(Enum):
+class Db_Type(Enum):
     MYSQL = 0
     SNOWFLAKE = 1
     REDSHIFT = 2
