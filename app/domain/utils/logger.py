@@ -30,8 +30,8 @@ async def api_logger(request: Request, response=None, error=None):
     t = time() - request.state.start
     status_code = error.status_code if error else response.status_code
     error_log = None
-    body = await request.body()
-    body = body.decode('utf-8').replace("\n", "").strip()
+    # body = await request.json()
+    # body = body.decode('utf-8').replace("\n", "").strip()
     if error:
         if request.state.inspect:
             frame = request.state.inspect
@@ -45,7 +45,7 @@ async def api_logger(request: Request, response=None, error=None):
         url=request.url.hostname + request.url.path,
         client=request.state.ip,
         method=str(request.method),
-        body=body if body else None,
+        # body=body if body else None,
         statusCode=status_code,
         processedTime=str(round(t * 1000, 5)) + "ms",
     )

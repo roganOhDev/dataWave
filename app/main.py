@@ -6,26 +6,24 @@ from uvicorn.config import LOGGING_CONFIG
 from app.common.database import db
 from app.router import connection_router
 from app.router import dag_router
-from get_information_from_user.const_value import about_querypie_elt
 from middle.controller import dispatch
 
 
 def create_app():
-    app = FastAPI()
+    app_birth = FastAPI()
 
-    db.init_app(app)
-    add_router(app)
-    app.add_middleware(middleware_class=BaseHTTPMiddleware, dispatch=dispatch)
-    return app
-
-
-def add_router(app):
-    app.include_router(connection_router.router, prefix="/connection")
-    app.include_router(dag_router.router, prefix="/dag")
-    return app
+    db.init_app(app_birth)
+    add_router(app_birth)
+    app_birth.add_middleware(middleware_class=BaseHTTPMiddleware, dispatch=dispatch)
+    return app_birth
 
 
-print(about_querypie_elt.welcome)
+def add_router(app_birth):
+    app_birth.include_router(connection_router.router, prefix="/connection")
+    app_birth.include_router(dag_router.router, prefix="/dag")
+    return app_birth
+
+
 app = create_app()
 
 

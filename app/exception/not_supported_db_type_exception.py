@@ -10,6 +10,7 @@ class NotSupportedDbTypeException(ApiException):
         self.code: str = ExceptionCode.connection.NOT_SUPPORTED_DB_TYPE
         self.message: str = "not supported db type"
         self.detail: str = json.dumps({"ApiException": {"code": self.code, "detail": self.message}})
+        super().log()
 
     def __repr__(self) -> str:
         return "ApiException{" + \

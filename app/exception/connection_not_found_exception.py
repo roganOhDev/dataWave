@@ -10,6 +10,7 @@ class ConnectionNotFoundException(ApiException):
         self.code: str = ExceptionCode.connection.CONNECTION_NOT_FOUND
         self.message: str = "connection not found"
         self.detail: str = json.dumps({"ApiException": {"code": self.code, "detail": self.message}})
+        super().log()
 
     def __repr__(self) -> str:
         return "ApiException{" + \

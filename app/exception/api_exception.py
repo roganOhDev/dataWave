@@ -1,5 +1,7 @@
 from fastapi import HTTPException
 
+from app.domain.utils.logger import logger
+
 
 class ApiException(HTTPException):
     def __init__(self):
@@ -11,3 +13,5 @@ class ApiException(HTTPException):
     def __repr__(self) -> str:
         return ""
 
+    def log(self):
+        logger.error(self.message)
