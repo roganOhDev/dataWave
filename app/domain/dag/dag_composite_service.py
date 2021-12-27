@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from app.domain.dag import dag_service as service
-from app.domain.dag.dag_info import DagInfo
+from app.domain.dag.dag_infoes import DagInfo
 from app.domain.os.get_pwd import *
 from app.dto import dag_info_dto
 from app.exception.already_exists_dag_id_exception import AlreadyExistsDagIdException

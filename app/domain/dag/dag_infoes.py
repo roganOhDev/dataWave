@@ -10,7 +10,7 @@ class DagInfo(Base):
     __tablename__ = "dag_infoes"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-    uuid = Column(String, unique=True, default=uuid_util.uuid())
+    uuid = Column(String, unique=True)
     dag_id = Column(String, nullable=False)
     airflow_home = Column(String, nullable=False)
     owner = Column(String, default="Rogan")
@@ -21,3 +21,6 @@ class DagInfo(Base):
     start_date = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
     updated_at = Column(DateTime, default=datetime.now(), nullable=False)
+
+    def __init__(self):
+        self.uuid = uuid_util.uuid()

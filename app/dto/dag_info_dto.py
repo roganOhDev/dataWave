@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from app.domain.dag.dag_info import DagInfo
+from app.domain.dag.dag_infoes import DagInfo
 
 
 class DagCreateDto(BaseModel):

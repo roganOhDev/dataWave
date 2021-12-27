@@ -1,13 +1,12 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, Query, Response, Request
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
+from starlette.responses import Response
 
 from app.common.database import db
 from app.domain.dag import dag_composite_service as composite_service
 from app.dto import dag_info_dto
-from starlette.responses import Response
-from starlette.requests import Request
 
 router = APIRouter()
 
@@ -30,7 +29,3 @@ def find(uuid: str, session: Session = Depends(db.session)):
 @router.delete("")
 async def find(uuids: List[str] = Query(None), session: Session = Depends(db.session)):
     composite_service.delete(uuids, session)
-
-@router.get("/test")
-async def a(request : Request):
-    return Response(print("hwolrd"))

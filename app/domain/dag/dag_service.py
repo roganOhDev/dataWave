@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from app.domain.dag.dag_info import DagInfo
+from app.domain.dag.dag_infoes import DagInfo
 from app.exception.dag_not_found_exception import DagNotFoundException
 
 

@@ -1,5 +1,4 @@
-import uuid as built_in_uuid
-
+import uuid as base_uuid
 
 def uuid():
-    return str(built_in_uuid.uuid1())
+    return str(base_uuid.uuid4())
