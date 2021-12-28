@@ -10,8 +10,8 @@ from app.dto.table_list_dto import Table_List_Dto
 router = APIRouter()
 
 
-# save 하는 것들 validate 필요
-# mysql 만 만들어 둠 / snowflake, aws 연결 만들어야 함
+# TODO: save 하는 것들 validate 필요 목표 : 목
+# TODO: mysql 만 만들어 둠 / snowflake, aws 연결 만들어야 함
 @router.get("")
 def find_all_tables(connection_uuid: str, session: Session = Depends(db.session)):
     return composite_service.find_tables(connection_uuid, session)
