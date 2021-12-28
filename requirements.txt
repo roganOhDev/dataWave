@@ -41,3 +41,4 @@ wrapt==1.12.1
 yarl==1.6.3
 
 multipledispatch~=0.6.0
+mysql-connector-python~=8.0.27

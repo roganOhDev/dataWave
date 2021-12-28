@@ -8,7 +8,7 @@ from app.domain.utils.logger import logger
 class AlreadyExistsDagIdException(ApiException):
     def __init__(self):
         self.status_code: int = 500
-        self.code: str = ExceptionCode.dag.ALREADY_EXITS_DAG_ID
+        self.code: str = ExceptionCode.Dag.ALREADY_EXITS_DAG_ID
         self.message: str = "Already Exist dag id"
         self.detail: str = json.dumps({"ApiException": {"code": self.code, "detail": self.message}})
         super().log()

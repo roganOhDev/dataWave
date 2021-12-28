@@ -2,14 +2,13 @@ import json
 
 from app.exception.api_exception import ApiException
 from app.exception.exception_code import ExceptionCode
-from app.domain.utils.logger import logger
 
 
-class CannotShowTable(ApiException):
-    def __init__(self, message: str):
+class TableListNotFoundException(ApiException):
+    def __init__(self):
         self.status_code: int = 500
-        self.code: str = ExceptionCode.Hook.CANNOT_SHOW_TABLE
-        self.message: str = message
+        self.code: str = ExceptionCode.Table_List.TABLE_LIST_NOT_FOUND
+        self.message: str = "Table List Not Found"
         self.detail: str = json.dumps({"ApiException": {"code": self.code, "detail": self.message}})
         super().log()
 

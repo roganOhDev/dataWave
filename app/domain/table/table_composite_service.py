@@ -10,6 +10,7 @@ from app.domain.table.table_list import Table_List
 from app.domain.utils.query import *
 from app.dto.table_list_dto import Table_List_Dto
 from app.exception.cannot_show_table import CannotShowTable
+from app.exception.table_list_not_found_exception import TableListNotFoundException
 
 
 def table_list(request: Table_List_Dto) -> Table_List:
@@ -27,16 +28,28 @@ def create(request: Table_List_Dto, session: Session):
     table_list_service.save(list, session)
 
 
+def update(uuid: str, request: Table_List_Dto, session: Session):
+    table_list = find(uuid, session)
+
+    table_list.connection_uuid = request.connection_uuid
+    table_list.table_list = request.table_list
+    table_list.rule_set = request.rule_set
+    table_list.pk = request.pk
+    table_list.updated_at = table_list.now()
+
+    table_list_service.save(table_list, session)
+
+
 def delete(uuids: List[str], session: Session):
     for uuid in uuids:
-        table_list = table_list_service.find(uuid, session)
+        table_list = find(uuid, session)
         if not table_list:
-            raise ConnectionNotFoundException()
+            raise TableListNotFoundException()
         table_list_service.delete(table_list, session)
 
 
 def find(uuid: str, session: Session) -> Table_List:
-    table_list_service.find(uuid, session, True)
+    return table_list_service.find(uuid, session, True)
 
 
 def find_tables(connection_uuid: str, session: Session) -> [str]:
