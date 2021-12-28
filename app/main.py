@@ -6,6 +6,7 @@ from uvicorn.config import LOGGING_CONFIG
 from app.common.database import db
 from app.router import connection_router
 from app.router import dag_router
+from app.router import table_router
 from middle.controller import dispatch
 
 
@@ -21,6 +22,7 @@ def create_app():
 def add_router(app_birth):
     app_birth.include_router(connection_router.router, prefix="/connection")
     app_birth.include_router(dag_router.router, prefix="/dag")
+    app_birth.include_router(table_router.router, prefix="/table_list")
     return app_birth
 
 

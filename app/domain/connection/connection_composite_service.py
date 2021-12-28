@@ -12,13 +12,13 @@ from app.exception.empty_value_exception import EmptyValueException
 from app.exception.not_supported_db_type_exception import NotSupportedDbTypeException
 
 
-def save(request: connection_dto.BaseConnectionDto, session: Session):
+def save(request: connection_dto.BaseConnectionSaveDto, session: Session):
     connection = connection_info(request)
     validate(connection)
     service.save(connection, session)
 
 
-def update(uuid: str, request: connection_dto.BaseConnectionDto, session: Session):
+def update(uuid: str, request: connection_dto.BaseConnectionSaveDto, session: Session):
     connection = service.find(uuid, session, True)
 
     connection.name = connection.name if not request.name else request.name
@@ -37,8 +37,8 @@ def update(uuid: str, request: connection_dto.BaseConnectionDto, session: Sessio
 
 
 def find(uuid: str, session: Session) -> connection_dto.ConnectionDto:
-    dag = service.find(uuid, session, True)
-    return connection_dto.of(dag)
+    connection = service.find(uuid, session, True)
+    return connection_dto.of(connection)
 
 
 def delete(uuids: List[str], session: Session):
@@ -46,7 +46,7 @@ def delete(uuids: List[str], session: Session):
         service.delete(uuid, session)
 
 
-def connection_info(request: connection_dto.BaseConnectionDto) -> Connection:
+def connection_info(request: connection_dto.BaseConnectionSaveDto) -> Connection:
     connection = Connection()
     connection.name = request.name
     connection.db_type = request.db_type

@@ -15,4 +15,4 @@ class ExceptionCode:
         CANNOT_SHOW_TABLE = "DWS-0300"
 
     class Table_List:
-        TABLE_LIST_NOT_FOUND = "DWS-0301"
+        TABLE_LIST_NOT_FOUND = "DWS-0400"
