@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy.orm import Session
 
 from app.domain.table import table_list_repository as repository
@@ -9,8 +11,12 @@ def save(table_list: Table_List, session: Session):
     repository.save(table_list, session)
 
 
-def delete(table_list: Table_List, session: Session):
-    repository.delete(table_list, session)
+def delete(uuids: List[str], session: Session):
+    for uuid in uuids:
+        table_list = find(uuid,session, True)
+        if not table_list:
+            raise TableListNotFoundException()
+        repository.delete(table_list, session)
 
 
 def find(uuid: str, session: Session, validate: bool) -> Table_List:

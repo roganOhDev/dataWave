@@ -34,5 +34,6 @@ integrate_metadata, integrate_db_type = get_db_info(dag, 'extract') # dag, conne
 tables_to_replicate = make_tables_to_replicate(integrate_db_type, dag.dag_id)
 destination_metadata, destination_db_type = get_db_info(dag, 'load')
 metadata_to_sql(integrate_metadata, destination_metadata, tables_to_replicate, engine)
+
 make_a_dag(ex_db_type=integrate_db_type, ld_db_type=destination_db_type, file_name=dag.dag_id + '.py', file_dir='./',
            dag_id=dag.dag_id)
