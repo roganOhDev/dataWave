@@ -14,7 +14,6 @@ router = APIRouter()
 def find(uuid: str, session: Session = Depends(db.session)) -> EltMapDto:
     return composite_service.find(uuid, session)
 
-
 @router.put("")
 def create(request: EltMapDto, session: Session = Depends(db.session)):
     composite_service.create(request, session)
