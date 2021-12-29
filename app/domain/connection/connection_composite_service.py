@@ -55,6 +55,7 @@ def connection_info(request: connection_dto.BaseConnectionSaveDto) -> Connection
     connection.account = "" if not request.account else request.account
     connection.user = request.user
     connection.password = request.password
+    connection.database = "" if not request.database else request.database
     connection.warehouse = "" if not request.warehouse else request.warehouse
     connection.option = connection.option if not request.option else request.option
     connection.role = "" if not request.role else request.role
