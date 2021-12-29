@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.domain.elt_map.elt_map import EltMap
 
 
-def find(uuid: str, session: Session, validate: bool) -> EltMap:
+def find(uuid: str, session: Session) -> EltMap:
     return session.query(EltMap).filter(EltMap.uuid == uuid).first()
 
 

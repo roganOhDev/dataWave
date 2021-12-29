@@ -13,7 +13,7 @@ def save(table_list: Table_List, session: Session):
 
 def delete(uuids: List[str], session: Session):
     for uuid in uuids:
-        table_list = find(uuid,session, True)
+        table_list = find(uuid, session, True)
         if not table_list:
             raise TableListNotFoundException()
         repository.delete(table_list, session)

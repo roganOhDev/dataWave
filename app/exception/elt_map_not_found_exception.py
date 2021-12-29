@@ -4,11 +4,11 @@ from app.exception.api_exception import ApiException
 from app.exception.exception_code import ExceptionCode
 
 
-class AlreadyExistsDagIdException(ApiException):
+class EltMapNotFoundException(ApiException):
     def __init__(self):
         self.status_code: int = 500
-        self.code: str = ExceptionCode.Dag.ALREADY_EXITS_DAG_ID
-        self.message: str = "Already Exist dag id"
+        self.code: str = ExceptionCode.Elt_Map.ELT_MAP_NOT_FOUND
+        self.message: str = "Elt Map Not Found"
         self.detail: str = json.dumps({"ApiException": {"code": self.code, "detail": self.message}})
         super().log()
 

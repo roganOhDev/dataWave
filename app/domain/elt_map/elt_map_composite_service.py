@@ -4,8 +4,8 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from app.domain.elt_map import elt_map_service as service
-from app.domain.table import table_composite_service
 from app.domain.elt_map.elt_map import EltMap
+from app.domain.table import table_composite_service
 from app.dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
 
 
@@ -32,7 +32,7 @@ def create(request: EltMapSaveDto, session: Session):
 
 def update(uuid: str, request: EltMapSaveDto, session: Session):
     elt_map = service.find(uuid, session, True)
-    elt_map = elt_map_info(request, elt_map)
+    elt_map = elt_map_info(request, session, elt_map)
     service.save(elt_map, session)
 
 
