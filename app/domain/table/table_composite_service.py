@@ -1,17 +1,18 @@
+from datetime import datetime
 from typing import List
 
 import mysql.connector
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 from app.domain.connection import connection_composite_service
 from app.domain.connection.db_type import Db_Type
 from app.domain.table import table_list_service
-from app.domain.table.table_list import Table_List, of
+from app.domain.table.table_list import Table_List
+from app.domain.utils import list_to_string_util
 from app.domain.utils.query import *
 from app.dto.table_list_dto import Table_List_Dto, of
 from app.exception.cannot_show_table import CannotShowTable
-from app.domain.utils import list_to_string_util
+
 
 def table_list_info(table_list: Table_List, request: Table_List_Dto) -> Table_List:
     table_list.connection_uuid = request.connection_uuid
@@ -21,6 +22,7 @@ def table_list_info(table_list: Table_List, request: Table_List_Dto) -> Table_Li
     table_list.updated_at = datetime.now()
 
     return table_list
+
 
 def create(request: Table_List_Dto, session: Session):
     list = table_list_info(Table_List(), request)
@@ -41,7 +43,6 @@ def delete(uuids: List[str], session: Session):
 def find(uuid: str, session: Session) -> Table_List_Dto:
     table_list = table_list_service.find(uuid, session, True)
     return of(table_list)
-
 
 
 def find_tables(connection_uuid: str, session: Session) -> [str]:

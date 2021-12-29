@@ -1,11 +1,9 @@
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, DateTime
-from pyxtension.streams import stream
 
 from app.common.database import Base
 from app.domain.utils import uuid_util
-from app.dto.table_list_dto import Table_List_Dto
 
 
 class Table_List(Base):
