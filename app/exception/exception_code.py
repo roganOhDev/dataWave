@@ -16,3 +16,6 @@ class ExceptionCode:
 
     class Table_List:
         TABLE_LIST_NOT_FOUND = "DWS-0400"
+
+    class Elt_Map:
+        ELT_MAP_NOT_FOUND = "DWS-0500"

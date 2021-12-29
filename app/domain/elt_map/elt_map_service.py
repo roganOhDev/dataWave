@@ -7,7 +7,7 @@ from app.domain.elt_map.elt_map import EltMap
 
 
 def find(uuid: str, session: Session, validate: bool) -> EltMap:
-    elt_map = repository.find(uuid, session)
+    elt_map = repository.find(uuid, session, True)
     if validate & (not elt_map):
         raise
     return elt_map

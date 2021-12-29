@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.common.database import db
 from app.domain.elt_map import elt_map_composite_service as composite_service
-from app.dto.elt_map_dto import EltMapDto
+from app.dto.elt_map_dto import EltMapDto, EltMapSaveDto
 
 router = APIRouter()
 
@@ -15,11 +15,11 @@ def find(uuid: str, session: Session = Depends(db.session)) -> EltMapDto:
     return composite_service.find(uuid, session)
 
 @router.put("")
-def create(request: EltMapDto, session: Session = Depends(db.session)):
+def create(request: EltMapSaveDto, session: Session = Depends(db.session)):
     composite_service.create(request, session)
 
 @router.put("/{uuid}")
-def update(uuid: str, request: EltMapDto, session: Session = Depends(db.session)):
+def update(uuid: str, request: EltMapSaveDto, session: Session = Depends(db.session)):
     composite_service.update(uuid, request, session)
 
 @router.delete("")

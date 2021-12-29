@@ -15,6 +15,7 @@ class EltMap(Base):
     destination_connection_uuid = Column(String, nullable=False)
     table_list_uuid = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
+    updated_at = Column(DateTime, default=datetime.now(), nullable=False)
 
     def __init__(self):
         self.uuid = uuid_util.uuid()

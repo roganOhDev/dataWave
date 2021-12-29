@@ -16,9 +16,9 @@ from app.exception.cannot_show_table import CannotShowTable
 
 def table_list_info(table_list: Table_List, request: Table_List_Save_Dto) -> Table_List:
     table_list.connection_uuid = request.connection_uuid
-    table_list.table_list = list_to_string_util.convert_str_list_to_string(request.table_list)
-    table_list.rule_set = list_to_string_util.convert_int_list_to_string(request.rule_set)
-    table_list.pk = list_to_string_util.convert_str_list_to_string(request.pk)
+    table_list.table_list = list_converter_util.convert_str_list_to_string(request.table_list)
+    table_list.rule_set = list_converter_util.convert_int_list_to_string(request.rule_set)
+    table_list.pk = list_converter_util.convert_str_list_to_string(request.pk)
     table_list.updated_at = datetime.now()
 
     return table_list
