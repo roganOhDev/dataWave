@@ -9,6 +9,7 @@ class EltMapSaveDto(BaseModel):
     dag_uuid: str = None
     destination_connection_uuid: str = None
     table_list_uuid: str = None
+    active: bool = False
 
 
 class EltMapDto(BaseModel):
@@ -18,6 +19,7 @@ class EltMapDto(BaseModel):
     integrate_connection_uuid: str = None
     destination_connection_uuid: str = None
     table_list_uuid: str = None
+    active: bool = None
     created_at: datetime = None
     updated_at: datetime = None
 
@@ -30,6 +32,7 @@ def of(elt_map: EltMap) -> EltMapDto:
     response.integrate_connection_uuid = elt_map.integrate_connection_uuid
     response.destination_connection_uuid = elt_map.destination_connection_uuid
     response.table_list_uuid = elt_map.table_list_uuid
+    response.active = elt_map.active
     response.created_at = elt_map.created_at
     response.created_at = elt_map.updated_at
 

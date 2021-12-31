@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Date
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 
 from app.common.database import Base
 from app.domain.utils import uuid_util
@@ -15,6 +15,7 @@ class EltMap(Base):
     integrate_connection_uuid = Column(String, nullable=False)
     destination_connection_uuid = Column(String, nullable=False)
     table_list_uuid = Column(String, nullable=False)
+    active = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
     updated_at = Column(DateTime, default=datetime.now(), nullable=False)
 

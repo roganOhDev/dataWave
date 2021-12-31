@@ -69,7 +69,8 @@ def validate_dag_id(dag_id: str, id: int, new: bool, session: Session):
 
 
 def update_dag_usage(elt_map: EltMapSaveDto, session):
-    dag = service.find(elt_map.dag_uuid, session, True)
-    dag.using = not dag.using
-    dag.updated_at = datetime.now()
-    service.save(dag, session)
+    if elt_map.dag_uuid:
+        dag = service.find(elt_map.dag_uuid, session, True)
+        dag.using = not dag.using
+        dag.updated_at = datetime.now()
+        service.save(dag, session)
