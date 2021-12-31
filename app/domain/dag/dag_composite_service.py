@@ -7,6 +7,7 @@ from app.domain.dag import dag_service as service
 from app.domain.dag.dag_infoes import DagInfo
 from app.domain.os.get_pwd import *
 from app.dto import dag_info_dto
+from app.dto.elt_map_dto import EltMapSaveDto
 from app.exception.already_exists_dag_id_exception import AlreadyExistsDagIdException
 
 
@@ -37,7 +38,8 @@ def find(uuid: str, session: Session) -> dag_info_dto.DagInfoDto:
 
 def delete(uuids: List[str], session: Session):
     for uuid in uuids:
-        service.delete(uuid, session)
+        dag = service.find(uuid, session, True)
+        service.delete(dag, session)
 
 
 def dag_info(request: dag_info_dto.DagCreateDto, session: Session):
@@ -64,3 +66,10 @@ def validate_dag_id(dag_id: str, id: int, new: bool, session: Session):
                 raise AlreadyExistsDagIdException()
         elif len(dags) > 1 | (False if not dags is None else dags[0].id != id):
             raise AlreadyExistsDagIdException()
+
+
+def update_dag_usage(elt_map: EltMapSaveDto, session):
+    dag = service.find(elt_map.dag_uuid, session, True)
+    dag.using = not dag.using
+    dag.updated_at = datetime.now()
+    service.save(dag, session)

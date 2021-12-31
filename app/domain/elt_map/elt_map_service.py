@@ -18,7 +18,5 @@ def save(request: EltMap, session: Session):
     repository.save(request, session)
 
 
-def delete(uuids: List[str], session):
-    for uuid in uuids:
-        elt_map = find(uuid, session, True)
-        repository.delete(elt_map, session)
+def delete(elt_map: EltMap, session):
+    repository.delete(elt_map, session)

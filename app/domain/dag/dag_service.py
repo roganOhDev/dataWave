@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.domain.dag import dag_repository as repository
 from app.domain.dag.dag_infoes import DagInfo
 from app.exception.dag_not_found_exception import DagNotFoundException
+from app.exception.using_dag_exception import UsingDagException
 
 
 def find_by_dag_id(dag_id: str, session: Session) -> DagInfo:
@@ -22,10 +23,9 @@ def find_all(dag_id: str, session: Session) -> List[DagInfo]:
     return repository.find_all(dag_id, session)
 
 
-def delete(uuid: str, session: Session):
-    dag = find(uuid, session)
-    if not dag:
-        raise DagNotFoundException
+def delete(dag: DagInfo, session: Session):
+    if dag.using:
+        raise UsingDagException()
     repository.delete(dag, session)
 
 

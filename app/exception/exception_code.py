@@ -5,6 +5,7 @@ class ExceptionCode:
     class Dag:
         ALREADY_EXITS_DAG_ID = "DWS-0100"
         DAG_NOT_FOUND = "DWS-0101"
+        USING_DAG = "DWS-0102"
 
     class Connection:
         ALREADY_EXITS_CONNECTION_NAME = "DWS-0200"
@@ -19,3 +20,4 @@ class ExceptionCode:
 
     class Elt_Map:
         ELT_MAP_NOT_FOUND = "DWS-0500"
+        USING_DAG = "DWS-0501"

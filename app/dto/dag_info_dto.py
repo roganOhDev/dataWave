@@ -38,6 +38,7 @@ class DagInfoDto(BaseModel):
     csv_files_directory: str = None
     yesterday: str = None
     start_date: str = None
+    using: bool = None
     created_at: datetime = None
     updated_at: datetime = None
 
@@ -54,6 +55,7 @@ def of(dag_info: DagInfo) -> DagInfoDto:
     dag_info_dto.csv_files_directory = dag_info.csv_files_directory
     dag_info_dto.yesterday = dag_info.yesterday.strftime("%Y-%m-%d")
     dag_info_dto.start_date = dag_info.start_date
+    dag_info_dto.using = dag_info.using
     dag_info_dto.created_at = dag_info.created_at
     dag_info_dto.updated_at = dag_info.updated_at
     return dag_info_dto
