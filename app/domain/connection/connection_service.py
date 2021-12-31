@@ -12,10 +12,7 @@ def find(uuid: str, session: Session, validate: bool) -> Connection:
     return connection
 
 
-def delete(uuid: str, session: Session):
-    connection = repository.find(uuid, session)
-    if not connection:
-        raise ConnectionNotFoundException()
+def delete(connection: Connection, session: Session):
     repository.delete(connection, session)
 
 

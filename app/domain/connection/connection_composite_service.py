@@ -43,7 +43,8 @@ def find(uuid: str, session: Session) -> connection_dto.ConnectionDto:
 
 def delete(uuids: List[str], session: Session):
     for uuid in uuids:
-        service.delete(uuid, session)
+        connection = service.find(uuid, session, True)
+        service.delete(connection, session)
 
 
 def connection_info(request: connection_dto.BaseConnectionSaveDto) -> Connection:

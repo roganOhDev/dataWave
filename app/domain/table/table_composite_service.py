@@ -37,7 +37,9 @@ def update(uuid: str, request: Table_List_Save_Dto, session: Session):
 
 
 def delete(uuids: List[str], session: Session):
-    table_list_service.delete(uuids, session)
+    for uuid in uuids:
+        table_list = table_list_service.find(uuid, session, True)
+        table_list_service.delete(table_list, session)
 
 
 def find(uuid: str, session: Session) -> Table_List_Dto:
