@@ -29,11 +29,11 @@ def update(uuid: str, request: EltMapSaveDto, session: Session = Depends(db.sess
 def delete(uuids: List[str] = Query(None), session: Session = Depends(db.session)):
     composite_service.delete(uuids, session)
 
-@router.put("")
+@router.put("/activate")
 def activate(uuid: str, request: EltMapSaveDto, session: Session = Depends(db.session)):
     composite_service.activate(uuid, session)
 
-@router.put("")
+@router.put("/deactivate")
 def activate(uuid: str, request: EltMapSaveDto, session: Session = Depends(db.session)):
     composite_service.deactivate(uuid, session)
 
