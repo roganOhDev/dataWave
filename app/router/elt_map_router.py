@@ -36,6 +36,5 @@ def activate(uuid: str, request: EltMapSaveDto, session: Session = Depends(db.se
 @router.put("")
 def activate(uuid: str, request: EltMapSaveDto, session: Session = Depends(db.session)):
     composite_service.deactivate(uuid, session)
-# TODO : active/deactive controller  만들기
 
-# TODO : active 할땐 dag 파일 만들고, deactive 할 땐 dag 파일 지우기
+# TODO : active 할땐 dag 파일 만들고, deactive 할 땐 dag 파일 지우기 (파일 생성 코드 이후)
