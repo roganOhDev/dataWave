@@ -12,6 +12,7 @@ from app.dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
 def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: EltMap) -> EltMap:
     table_list = table_composite_service.find(elt_map_info_dto.table_list_uuid, session)
 
+    elt_map.dag_uuid = elt_map_info_dto.dag_uuid
     elt_map.integrate_connection_uuid = table_list.connection_uuid
     elt_map.destination_connection_uuid = elt_map_info_dto.destination_connection_uuid
     elt_map.table_list_uuid = elt_map_info_dto.table_list_uuid

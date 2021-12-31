@@ -11,6 +11,7 @@ class EltMap(Base):
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     uuid = Column(String, unique=True)
+    dag_uuid = Column(String, nullable=False)
     integrate_connection_uuid = Column(String, nullable=False)
     destination_connection_uuid = Column(String, nullable=False)
     table_list_uuid = Column(String, nullable=False)
