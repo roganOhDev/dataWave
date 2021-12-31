@@ -9,7 +9,6 @@ class EltMapSaveDto(BaseModel):
     dag_uuid: str = None
     destination_connection_uuid: str = None
     table_list_uuid: str = None
-    active: bool = False
 
 
 class EltMapDto(BaseModel):

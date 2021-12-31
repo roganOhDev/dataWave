@@ -34,8 +34,6 @@ def create(request: EltMapSaveDto, session: Session):
     elt_map = elt_map_info(request, session, EltMap())
     if request.dag_uuid:
         dag_composite_service.update_dag_usage(request, session)
-    else:
-        elt_map.active = False
     service.save(elt_map, session)
 
 
@@ -47,8 +45,6 @@ def update(uuid: str, request: EltMapSaveDto, session: Session):
         dag_composite_service.update_dag_usage(request, session)
     elt_map = elt_map_info(request, session, elt_map)
 
-    if not request.dag_uuid:
-        elt_map.active = False
     service.save(elt_map, session)
 
 
@@ -56,6 +52,16 @@ def delete(uuids: List[str], session: Session):
     for uuid in uuids:
         elt_map = service.find(uuid, session, True)
         service.delete(elt_map, session)
+
+def activate(uuid: str, session: Session):
+    elt_map = service.find(uuid, session, True)
+    elt_map.active = True
+    service.save(elt_map, session)
+
+def deactivate(uuid: str, session: Session):
+    elt_map = service.find(uuid, session, True)
+    elt_map.active = False
+    service.save(elt_map, session)
 
 def validate(request: EltMapSaveDto, session: Session):
     if request.dag_uuid:
