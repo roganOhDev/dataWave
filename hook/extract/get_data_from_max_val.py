@@ -8,7 +8,7 @@ def get_data_from_max_val(engine, i, ds, db_information, metadatas):
     schema = metadatas.schema[i]
     engine_ds = get_engine(ds['db_type'][0], db_information)
     dag_id = metadatas.dag_id
-    columns = metadatas.columns
+    columns = metadatas.column_info
     directory = metadatas.csv_files_directory
     pk = metadatas.pk
     upsert = metadatas.upsert_rule

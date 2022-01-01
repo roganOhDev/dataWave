@@ -12,9 +12,7 @@ class Table_List(Base):
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     uuid = Column(String, unique=True)
     connection_uuid = Column(String, nullable=False)
-    table_list = Column(String, nullable=False)
-    rule_set = Column(String, nullable=False)
-    pk = Column(String, nullable=False)
+    column_info = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
     updated_at = Column(DateTime, default=datetime.now(), nullable=False)
 

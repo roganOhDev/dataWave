@@ -10,8 +10,8 @@ Available functions:
 """
 import subprocess
 
-from get_information_from_user import get_sql_alchemy_conn
-from querypie_el_ver2.get_information_from_user.const_value import db
+from app.domain.elt_map.create_dag import get_sql_alchemy_conn
+from get_information_from_user.const_value import db
 
 
 # find ~ first
@@ -21,6 +21,7 @@ def get_backend():
     home = home_undecoded.decode('utf-8').replace("\n", '')
     # cause I made install airflow at ~ airflow home must be ~/airflow
     airflow_home = home + '/airflow'
+
     backend = get_sql_alchemy_conn.get_sql_alchemy_conn(airflow_home)
     return backend
 

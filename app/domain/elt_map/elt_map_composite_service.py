@@ -1,24 +1,28 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy.orm import Session
-
+from app.domain.connection import connection_composite_service
+from app.domain.connection.db_type import Db_Type
 from app.domain.dag import dag_composite_service
 from app.domain.elt_map import elt_map_service as service
+from app.domain.elt_map.create_dag.dag_format import dag_format
+from app.domain.elt_map.create_dag.db_vendor_raw_code import *
+from app.domain.elt_map.create_dag.get_sql_alchemy_conn import get_sql_alchemy_conn
 from app.domain.elt_map.elt_map import EltMap
 from app.domain.table import table_composite_service
+from app.domain.utils.list_converter_util import *
 from app.dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
 from app.exception.caanot_use_this_dag_exception import CannotUseThisDagException
+from app.exception.connections_are_not_equal import ConnectionsAreNotEqual
 
 
 def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: EltMap) -> EltMap:
-    table_list = table_composite_service.find(elt_map_info_dto.table_list_uuid, session)
+    table_list = table_composite_service.find(elt_map_info_dto.table_list_uuids[0], session)
 
     elt_map.dag_uuid = elt_map_info_dto.dag_uuid
     elt_map.integrate_connection_uuid = table_list.connection_uuid
     elt_map.destination_connection_uuid = elt_map_info_dto.destination_connection_uuid
-    elt_map.table_list_uuid = elt_map_info_dto.table_list_uuid
-    elt_map.active = elt_map_info_dto.active
+    elt_map.table_list_uuids = convert_str_list_to_string(elt_map_info_dto.table_list_uuids)
     elt_map.updated_at = datetime.now()
 
     return elt_map
@@ -53,18 +57,77 @@ def delete(uuids: List[str], session: Session):
         elt_map = service.find(uuid, session, True)
         service.delete(elt_map, session)
 
+
 def activate(uuid: str, session: Session):
     elt_map = service.find(uuid, session, True)
     elt_map.active = True
     service.save(elt_map, session)
+
 
 def deactivate(uuid: str, session: Session):
     elt_map = service.find(uuid, session, True)
     elt_map.active = False
     service.save(elt_map, session)
 
+
 def validate(request: EltMapSaveDto, session: Session):
     if request.dag_uuid:
         dag = dag_composite_service.find(request.dag_uuid, session)
         if dag.using:
             raise CannotUseThisDagException()
+
+    connection_uuids = []
+    for table_list_uuid in request.table_list_uuids:
+        connection_uuids.append(table_composite_service.find(table_list_uuid, session).connection_uuid)
+    if all(connection_uuid == connection_uuids[0] for connection_uuid in connection_uuids):
+        pass
+    else:
+        raise ConnectionsAreNotEqual()
+
+
+def create_file(elt_map: EltMap, session: Session):
+    dag = dag_composite_service.find(elt_map.dag_uuid, session)
+
+    connection = connection_composite_service.find(elt_map.integrate_connection_uuid, session)
+    extract_data_raw_code = get_extract_data_wave_raw_code(elt_map, session)
+    load_data_raw_code = get_extract_data_wave_raw_code(elt_map, session)
+
+    backend = get_sql_alchemy_conn(dag.airflow_home)
+    dag_format.format(dag.dag_id, backend)
+
+
+def delete_file(elt_map: EltMap):
+    return 0
+
+
+def get_extract_data_wave_raw_code(elt_map: EltMap, session: Session) -> str:
+    connection = connection_composite_service.find(elt_map.integrate_connection_uuid, session)
+    return make_data_wave_raw_code(elt_map, 'extract', session)
+
+
+def get_load_data_wave_raw_code(elt_map: EltMap, session: Session) -> str:
+    connection = connection_composite_service.find(elt_map.integrate_connection_uuid, session)
+    return make_data_wave_raw_code(elt_map, 'load', session)
+
+
+def make_data_wave_raw_code(elt_map: EltMap, connection_type, session: Session) -> str:
+    connection = \
+        connection_composite_service.find(elt_map.integrate_connection_uuid, session) if connection_type == 'extract' \
+            else connection_composite_service.find(elt_map.destination_connection_uuid, session)
+    dag = dag_composite_service.find(elt_map.dag_uuid, session)
+    table_lists = []
+    for table_list_uuid in elt_map.table_list_uuids:
+        table_list = table_composite_service.find(table_list_uuid, session)
+        table_lists.append(table_list)
+
+    get_data = ""
+    if connection.db_type == Db_Type.SNOWFLAKE.name:
+        get_data = make_snowflake_raw_code(connection, dag, table_lists, connection_type, session)
+
+    elif connection.db_type == Db_Type.MYSQL:
+        get_data = make_mysql_raw_code(connection, dag, table_lists, connection_type, session)
+
+    elif connection.db_type in (Db_Type.REDSHIFT, Db_Type.POSTGRESQL):
+        get_data = make_amazon_raw_code(connection, dag, table_lists, connection_type, session)
+
+    return get_data

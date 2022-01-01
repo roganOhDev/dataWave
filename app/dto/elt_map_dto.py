@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from pydantic import BaseModel
 
@@ -8,7 +9,7 @@ from app.domain.elt_map.elt_map import EltMap
 class EltMapSaveDto(BaseModel):
     dag_uuid: str = None
     destination_connection_uuid: str = None
-    table_list_uuid: str = None
+    table_list_uuids: List[str] = None
 
 
 class EltMapDto(BaseModel):
@@ -17,7 +18,7 @@ class EltMapDto(BaseModel):
     dag_uuid: str = None
     integrate_connection_uuid: str = None
     destination_connection_uuid: str = None
-    table_list_uuid: str = None
+    table_list_uuids: str = None
     active: bool = None
     created_at: datetime = None
     updated_at: datetime = None
@@ -30,7 +31,7 @@ def of(elt_map: EltMap) -> EltMapDto:
     response.dag_uuid = elt_map.dag_uuid
     response.integrate_connection_uuid = elt_map.integrate_connection_uuid
     response.destination_connection_uuid = elt_map.destination_connection_uuid
-    response.table_list_uuid = elt_map.table_list_uuid
+    response.table_list_uuids = elt_map.table_list_uuids
     response.active = elt_map.active
     response.created_at = elt_map.created_at
     response.created_at = elt_map.updated_at

@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-from get_information_from_user import get_sql_alchemy_conn
+from app.domain.elt_map.create_dag import get_sql_alchemy_conn
 
 
 def get_airflow_home_and_backend_url():

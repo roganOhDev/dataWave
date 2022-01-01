@@ -17,7 +17,9 @@ class ExceptionCode:
 
     class Table_List:
         TABLE_LIST_NOT_FOUND = "DWS-0400"
+        COLUMNS_NOT_INCLUDE_PK = "DWS-0401"
 
     class Elt_Map:
         ELT_MAP_NOT_FOUND = "DWS-0500"
         USING_DAG = "DWS-0501"
+        CONNECTIONS_ARE_NOT_EQUAL = "DWS-0502"

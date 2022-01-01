@@ -44,7 +44,7 @@ def mysql_raw_code_maker(db_url_component, dag, type):
                 'db_type': [db_url_component.db_type],
                 'db_information': [
                     """{{'id': '{id}', 'pwd': '{pwd}', 'host': '{host}', 'port': '{port}' 'option': '{option}'}}
-                    """.format(id=db_url_component.id, pwd=db_url_component.pwd, host=db_url_component.host,
+                    """.format(id=db_url_component.user, pwd=db_url_component.pwd, host=db_url_component.host,
                                port=db_url_component.port, option=db_url_component.option)],
                 'info_type': [type]}
     return raw_data
@@ -60,7 +60,7 @@ def snowflake_raw_code_maker(db_url_component, dag, type):
                 'db_type': [db_url_component.db_type],
                 'db_information': [
                     """{{'id': '{id}', 'pwd': '{pwd}', 'account': '{account}', 'warehouse': '{warehouse}', 'role': '{role}'}}
-                    """.format(id=db_url_component.id, pwd=db_url_component.pwd, account=db_url_component.account,
+                    """.format(id=db_url_component.user, pwd=db_url_component.pwd, account=db_url_component.account,
                                warehouse=db_url_component.warehouse, role=db_url_component.role)],
                 'info_type': [type]}
     return raw_data
@@ -76,7 +76,7 @@ def amazon_raw_code_maker(db_url_component, dag, type):
                 'db_type': [db_url_component.db_type],
                 'db_information': [
                     """{{'id': '{id}', 'pwd': '{pwd}', 'host': '{host}', 'port': '{port}',  'option': '{option}' }}
-                    """.format(id=db_url_component.id, pwd=db_url_component.pwd, host=db_url_component.host,
+                    """.format(id=db_url_component.user, pwd=db_url_component.pwd, host=db_url_component.host,
                                port=db_url_component.port, option=db_url_component.option)],
                 'info_type': [type]}
     return raw_data

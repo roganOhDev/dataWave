@@ -87,7 +87,7 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
                 indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
                 # 두 테이블의 칼럼을 하나의 리스트로 합침:
                 new_columns = indata.columns.values
-                before_columns = result.columns.values
+                before_columns = result.column_info.values
                 cnt = 0  # 추가된 칼럼 없음
                 for v in new_columns:
                     if v not in before_columns:
@@ -142,7 +142,7 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
                 indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
                 # 두 테이블의 칼럼을 하나의 리스트로 합침:
                 new_columns = indata.columns.values
-                before_columns = result.columns.values
+                before_columns = result.column_info.values
                 cnt = 0  # 추가된 칼럼 없음
                 for v in new_columns:
                     if v not in before_columns:
@@ -289,7 +289,7 @@ def postgresql(dag_id, id, pwd, host, port, database,schema, tables, directory, 
             indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
             # 두 테이블의 칼럼을 하나의 리스트로 합침
             new_columns = indata.columns.values
-            before_columns = result.columns.values
+            before_columns = result.column_info.values
             cnt = 0  # 추가된 칼럼 없음
             for v in new_columns:
                 if v not in before_columns:
@@ -343,7 +343,7 @@ def postgresql(dag_id, id, pwd, host, port, database,schema, tables, directory, 
                 # before_columns: 기존에 있었던 칼럼들
                 # new_columns: 새로 추가될 테이블의 칼럼
                 before_columns = indata.columns.values
-                new_columns = result.columns.values
+                new_columns = result.column_info.values
                 cnt = 0  # 추가된 칼럼 없음
                 for v in new_columns:
                     if v not in before_columns:
@@ -482,7 +482,7 @@ def redshift(dag_id, id, pwd, host, port, database,schema, tables, directory, pk
             indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
             # 두 테이블의 칼럼을 하나의 리스트로 합침
             new_columns = indata.columns.values
-            before_columns = result.columns.values
+            before_columns = result.column_info.values
             cnt = 0  # 추가된 칼럼 없음
             for v in new_columns:
                 if v not in before_columns:
@@ -534,7 +534,7 @@ def redshift(dag_id, id, pwd, host, port, database,schema, tables, directory, pk
                 indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
                 # 두 테이블의 칼럼을 하나의 리스트로 합침
                 new_columns = indata.columns.values
-                before_columns = result.columns.values
+                before_columns = result.column_info.values
                 cnt = 0  # 추가된 칼럼 없음
                 for v in new_columns:
                     if v not in before_columns:
@@ -694,7 +694,7 @@ def mysql(dag_id, id, pwd, host, port, database, tables, directory, option, pk, 
             #before_columns: 기존에 있었던 칼럼들
             #new_columns: 새로 추가될 테이블의 칼럼
             before_columns = indata.columns.values
-            new_columns = result.columns.values
+            new_columns = result.column_info.values
             cnt=0 # 추가된 칼럼 없음
             for v in new_columns:
                 if v not in before_columns:
@@ -745,7 +745,7 @@ def mysql(dag_id, id, pwd, host, port, database, tables, directory, option, pk, 
                 # before_columns: 기존에 있었던 칼럼들
                 # new_columns: 새로 추가될 테이블의 칼럼
                 before_columns = indata.columns.values
-                new_columns = result.columns.values
+                new_columns = result.column_info.values
                 cnt = 0  # 추가된 칼럼 없음
                 for v in new_columns:
                     if v not in before_columns:
