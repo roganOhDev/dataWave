@@ -61,6 +61,7 @@ def delete(uuids: List[str], session: Session):
 def activate(uuid: str, session: Session):
     elt_map = service.find(uuid, session, True)
     elt_map.active = True
+    create_file(elt_map, session)
     service.save(elt_map, session)
 
 
@@ -88,12 +89,15 @@ def validate(request: EltMapSaveDto, session: Session):
 def create_file(elt_map: EltMap, session: Session):
     dag = dag_composite_service.find(elt_map.dag_uuid, session)
 
-    connection = connection_composite_service.find(elt_map.integrate_connection_uuid, session)
     extract_data_raw_code = get_extract_data_wave_raw_code(elt_map, session)
     load_data_raw_code = get_extract_data_wave_raw_code(elt_map, session)
 
     backend = get_sql_alchemy_conn(dag.airflow_home)
-    dag_format.format(dag.dag_id, backend)
+    dag_format.format(dag_id=dag.dag_id, backend=backend, extract_task=extract_data_raw_code,
+                      load_task=load_data_raw_code)
+
+    with open("../../../airflow/dags/"+dag.dag_id+".py", 'w') as file:
+        file.write('{}'.format(dag_format))
 
 
 def delete_file(elt_map: EltMap):
@@ -116,7 +120,8 @@ def make_data_wave_raw_code(elt_map: EltMap, connection_type, session: Session) 
             else connection_composite_service.find(elt_map.destination_connection_uuid, session)
     dag = dag_composite_service.find(elt_map.dag_uuid, session)
     table_lists = []
-    for table_list_uuid in elt_map.table_list_uuids:
+    table_list_uuids = ','.split(elt_map.table_list_uuids)
+    for table_list_uuid in table_list_uuids:
         table_list = table_composite_service.find(table_list_uuid, session)
         table_lists.append(table_list)
 

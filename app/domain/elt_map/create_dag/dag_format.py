@@ -6,8 +6,8 @@ from airflow.operators.python_operator import PythonOperator
 import sqlalchemy as sql
 import pandas as pd
 import json
-from querypie_el.hook import do_extract
-from querypie_el.hook import do_load
+from app.domain.hook.extract import do_extract
+from app.domain.hook.load import do_load
 backend_engine = sql.create_engine('{backend}')
 ex = pd.read_sql_query(
         "select * from metadata where dag_id='{dag_id}' and info_type='extract'",

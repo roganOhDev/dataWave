@@ -20,11 +20,10 @@ in every function
 import sqlalchemy as sql
 
 from get_information_from_user.structs import user_all_data
-from hook.extract.get_data_from_max_val import get_data_from_max_val
-from hook.extract.get_db_info import get_db_info
-from hook.extract.get_full_table import *
+from app.domain.hook.extract.get_data_from_max_val import get_data_from_max_val
+from app.domain.hook.extract.get_db_info import get_db_info
 from get_information_from_user.make_a_dag import get_backend
-from hook.extract.get_full_table import get_full_table_amazon, get_full_table_snowflake
+from app.domain.hook.extract.get_full_table import get_full_table_amazon, get_full_table_snowflake
 
 backend_engine = sql.create_engine(get_backend())
 

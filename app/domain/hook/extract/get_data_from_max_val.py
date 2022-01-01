@@ -1,5 +1,5 @@
-from querypie_el_ver2.hook.extract.get_full_table import *
-from querypie_el_ver2.hook.get_engine import get_engine
+from get_full_table import *
+from hook.get_engine import get_engine
 
 
 def get_data_from_max_val(engine, i, ds, db_information, metadatas):
