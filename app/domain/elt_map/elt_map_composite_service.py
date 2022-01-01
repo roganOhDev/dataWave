@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 from app.domain.connection import connection_composite_service
 from app.domain.connection.db_type import Db_Type
@@ -90,14 +89,20 @@ def create_file(elt_map: EltMap, session: Session):
     dag = dag_composite_service.find(elt_map.dag_uuid, session)
 
     extract_data_raw_code = get_extract_data_wave_raw_code(elt_map, session)
-    load_data_raw_code = get_extract_data_wave_raw_code(elt_map, session)
+    load_data_raw_code = get_load_data_wave_raw_code(elt_map, session)
 
     backend = get_sql_alchemy_conn(dag.airflow_home)
-    dag_format.format(dag_id=dag.dag_id, backend=backend, extract_task=extract_data_raw_code,
-                      load_task=load_data_raw_code)
+    dag_code = dag_format.format(dag_id=dag.dag_id,
+                                 extract_task=extract_data_raw_code,
+                                 load_task=load_data_raw_code,
+                                 catchup=dag.catchup,
+                                 schedule_interval=dag.schedule_interval,
+                                 owner=dag.owner,
+                                 start_date=dag.start_date,
+                                 )
 
-    with open("../../../airflow/dags/"+dag.dag_id+".py", 'w') as file:
-        file.write('{}'.format(dag_format))
+    with open(dag.airflow_home + "/dags/" + dag.dag_id + ".py", 'w', encoding="utf-8") as file:
+        file.write('{}'.format(dag_code))
 
 
 def delete_file(elt_map: EltMap):
@@ -120,7 +125,7 @@ def make_data_wave_raw_code(elt_map: EltMap, connection_type, session: Session) 
             else connection_composite_service.find(elt_map.destination_connection_uuid, session)
     dag = dag_composite_service.find(elt_map.dag_uuid, session)
     table_lists = []
-    table_list_uuids = ','.split(elt_map.table_list_uuids)
+    table_list_uuids = elt_map.table_list_uuids.split(', ')
     for table_list_uuid in table_list_uuids:
         table_list = table_composite_service.find(table_list_uuid, session)
         table_lists.append(table_list)
@@ -129,10 +134,10 @@ def make_data_wave_raw_code(elt_map: EltMap, connection_type, session: Session) 
     if connection.db_type == Db_Type.SNOWFLAKE.name:
         get_data = make_snowflake_raw_code(connection, dag, table_lists, connection_type, session)
 
-    elif connection.db_type == Db_Type.MYSQL:
+    elif connection.db_type == Db_Type.MYSQL.name:
         get_data = make_mysql_raw_code(connection, dag, table_lists, connection_type, session)
 
-    elif connection.db_type in (Db_Type.REDSHIFT, Db_Type.POSTGRESQL):
+    elif connection.db_type in (Db_Type.REDSHIFT.name, Db_Type.POSTGRESQL.name):
         get_data = make_amazon_raw_code(connection, dag, table_lists, connection_type, session)
 
     return get_data

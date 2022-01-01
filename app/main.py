@@ -6,8 +6,8 @@ from uvicorn.config import LOGGING_CONFIG
 from app.common.database import db
 from app.router import connection_router
 from app.router import dag_router
-from app.router import table_router
 from app.router import elt_map_router
+from app.router import table_router
 from middle.controller import dispatch
 
 
@@ -33,6 +33,7 @@ app = create_app()
 
 def run():
     LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s [%(name)s] %(levelprefix)s %(message)s"
+    # TODO: reload 떼기
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, use_colors=True)
 
 

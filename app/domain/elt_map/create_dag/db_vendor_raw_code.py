@@ -1,53 +1,56 @@
+from typing import List
+
 from sqlalchemy.orm import Session
 
-from app.domain.connection.connection import Connection
-from app.domain.dag.dag_infoes import DagInfo
-from app.domain.table.table_list import Table_List
+from app.domain.utils.json_util import loads
 from app.dto.connection_dto import ConnectionDto
 from app.dto.dag_info_dto import DagInfoDto
 from app.dto.table_list_dto import Table_List_Dto
 
 
-def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists: [Table_List_Dto], connection_type: str,
+def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists: List[Table_List_Dto],
+                        connection_type: str,
                         session: Session) -> str:
-    task_id = 'get_data' if connection_type == 'extract' else 'do_load'
-    func_name = 'get_data' if connection_type == 'extract' else 'do_load'
-
+    task_id = 'do_extract' if connection_type == 'extract' else 'do_load'
+    func_name = 'do_extract' if connection_type == 'extract' else 'do_load'
+    tables, columns, pks, rule_sets = map_table_info(table_lists)
     get_data = '''PythonOperator(
-                 task_id='{task_id}',
-                 python_callable=getattr({func_name},{db_type}),
-                 op_kwargs = {{'user': {user},
-                    'pwd': {pwd},
-                    'host': {host},
-                    'port': {port},
-                    'database': {database},
-                    'csv_files_directory': {csv_files_directory},
-                    'tables': tables,
-                    'option': {option}+'mb4',
-                    'columns': {columns},
-                    'pk': {pk},
-                    'upsert' : {upsert},
-                    'dag_id' : {dag_id}}},
-                 dag=dag
-             )'''.format(task_id=task_id,
-                         func_name=func_name,
-                         db_type=connection_type + connection.db_type,
-                         user=connection_type + connection.user,
-                         pwd=connection_type + connection.pwd,
-                         host=connection_type + connection.host,
-                         port=connection_type + connection.port,
-                         database=connection.database,
-                         csv_files_directory=dag.csv_files_directory,
-                         option=connection.option,
-                         columns=table_lists.columns_info,
-                         pk=table_lists.pk,
-                         upsert=table_lists.rule_set,
-                         dag_id=dag.dag_id,
-                         )
+     task_id='{task_id}',
+     python_callable=getattr({func_name}, Db_Type.{db_type}.name),
+     op_kwargs = {{'user': "{user}",
+            'pwd': "{pwd}",
+            'host': "{host}",
+            'port': "{port}",
+            'database': "{database}",
+            'csv_files_directory': "{csv_files_directory}",
+            'tables': {tables},
+            'option': '{option}',
+            'columns': {columns},
+            'pk': {pk},
+            'upsert': {upsert},
+            'dag_id': "{dag_id}"}},
+         dag=dag
+     )'''.format(task_id=task_id,
+             func_name=func_name,
+             db_type=connection.db_type,
+             user=connection.user,
+             pwd=connection.password,
+             host=connection.host,
+             port=connection.port,
+             database=connection.database,
+             csv_files_directory=dag.csv_files_directory,
+             option=connection.option,
+             tables=tables,
+             columns=columns,
+             pk=pks,
+             upsert=rule_sets,
+             dag_id=dag.dag_id,
+             )
     return get_data
 
 
-def make_snowflake_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists: [Table_List_Dto], connection_type: str,
+def make_snowflake_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists: [Table_List_Dto],
+                            connection_type: str,
                             session: Session) -> str:
     if connection_type == "ex":
         task_id = 'get_data'
@@ -98,7 +101,8 @@ def make_snowflake_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_li
     return get_data
 
 
-def make_amazon_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists: [Table_List_Dto], connection_type: str,
+def make_amazon_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists: [Table_List_Dto],
+                         connection_type: str,
                          session: Session) -> str:
     if connection_type == 'ex':
         task_id = 'get_data'
@@ -145,3 +149,18 @@ def make_amazon_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists
                          dag_id="tr['dag_id'][0]",
                          updated="tr['updated'][0]"
                          )
+
+
+def map_table_info(table_lists: List[Table_List_Dto]) -> ([str], [str], [str], [str]):
+    tables = []
+    columns = []
+    pks = []
+    rule_sets = []
+    for table_list in table_lists:
+        column_info = loads(table_list.columns_info)
+        tables.append(column_info['table_name'])
+        columns.append(column_info['columns'])
+        pks.append(column_info['pk'])
+        rule_sets.append(column_info['rule_set'])
+
+    return tables, columns, pks, rule_sets
