@@ -13,6 +13,7 @@ class Table_List(Base):
     uuid = Column(String, unique=True)
     connection_uuid = Column(String, nullable=False)
     column_info = Column(String, nullable=False)
+    max_pk = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
     updated_at = Column(DateTime, default=datetime.now(), nullable=False)
 

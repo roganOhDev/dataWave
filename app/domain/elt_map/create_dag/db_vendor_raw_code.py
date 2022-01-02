@@ -13,7 +13,7 @@ def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists:
                         session: Session) -> str:
     task_id = 'do_extract' if connection_type == 'extract' else 'do_load'
     func_name = 'do_extract' if connection_type == 'extract' else 'do_load'
-    tables, columns, pks, rule_sets = map_table_info(table_lists)
+    tables, columns, pks, rule_sets, tables_pk_max = map_table_info(table_lists)
     get_data = '''PythonOperator(
      task_id='{task_id}',
      python_callable=getattr({func_name}, Db_Type.{db_type}.name.lower()),
@@ -28,24 +28,26 @@ def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists:
             'columns': {columns},
             'pk': {pk},
             'upsert': {upsert},
-            'dag_id': "{dag_id}"}},
+            'dag_id': "{dag_id}",
+            'tables_pk_max': "{tables_pk_max}"}},
          dag=dag
      )'''.format(task_id=task_id,
-             func_name=func_name,
-             db_type=connection.db_type,
-             user=connection.user,
-             pwd=connection.password,
-             host=connection.host,
-             port=connection.port,
-             database=connection.database,
-             csv_files_directory=dag.csv_files_directory,
-             option=connection.option,
-             tables=tables,
-             columns=columns,
-             pk=pks,
-             upsert=rule_sets,
-             dag_id=dag.dag_id,
-             )
+                 func_name=func_name,
+                 db_type=connection.db_type,
+                 user=connection.user,
+                 pwd=connection.password,
+                 host=connection.host,
+                 port=connection.port,
+                 database=connection.database,
+                 csv_files_directory=dag.csv_files_directory,
+                 option=connection.option,
+                 tables=tables,
+                 columns=columns,
+                 pk=pks,
+                 upsert=rule_sets,
+                 dag_id=dag.dag_id,
+                 tables_pk_max=tables_pk_max
+                 )
     return get_data
 
 
@@ -151,16 +153,18 @@ def make_amazon_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists
                          )
 
 
-def map_table_info(table_lists: List[Table_List_Dto]) -> ([str], [str], [str], [str]):
+def map_table_info(table_lists: List[Table_List_Dto]) -> ([str], [str], [str], [str], [int]):
     tables = []
     columns = []
     pks = []
     rule_sets = []
+    tables_pk_max = []
     for table_list in table_lists:
         column_info = loads(table_list.columns_info)
         tables.append(column_info['table_name'])
         columns.append(column_info['columns'])
         pks.append(column_info['pk'])
         rule_sets.append(column_info['rule_set'])
+        tables_pk_max.append(table_list.max_pk)
 
-    return tables, columns, pks, rule_sets
+    return tables, columns, pks, rule_sets, tables_pk_max

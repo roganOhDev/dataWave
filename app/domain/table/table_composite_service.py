@@ -31,8 +31,7 @@ def create(request: Table_List_Create_Dto, session: Session):
 def update(uuid: str, request: Table_List_Update_Dto, session: Session):
     table_list = table_list_service.find(uuid, session, True)
 
-    table_list.connection_uuid = request.connection_uuid
-    table_list.column_info = json(request.column_info)
+    table_list.max_pk = 0
     table_list.updated_at = datetime.now()
 
     table_list_service.save(table_list, session)

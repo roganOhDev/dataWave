@@ -166,7 +166,7 @@ def redshift(dag_id, user, pwd, host, port, database, schema, tables, directory,
 
 
 def mysql(dag_id: str, user: str, pwd: str, host: str, port: str, database: str, tables: List[str], csv_files_directory: str,
-          columns: List[List[str]], pk: List[str], upsert: List[int], updated, option: str):
+          columns: List[List[str]], pk: List[str], upsert: List[int],tables_pk_max: List[int], updated, option: str):
 
     user_data = User_All_Data(dag_id, user, pwd, columns, pk, updated, upsert, tables, database, csv_files_directory,
                               option=option, host=host, port=port)
@@ -179,4 +179,4 @@ def mysql(dag_id: str, user: str, pwd: str, host: str, port: str, database: str,
             get_full_table_mysql(csv_files_directory, dag_id, connection, column, table)
 
         elif rule_set in (Rule_Set.INCREASEMENT.value, Rule_Set.MERGE.value):
-            get_data_from_max_val(engine, i, ds, db_information, user_data)
+            get_data_from_max_val(tables_pk_max,engine, i, ds, db_information, user_data)

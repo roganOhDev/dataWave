@@ -1,8 +1,10 @@
 from get_full_table import *
 from hook.get_engine import get_engine
+from app.domain.table import table_composite_service
 
 
-def get_data_from_max_val(engine, i, ds, db_information, metadatas):
+def get_data_from_max_val(tables_pk_max: [int]):
+    table_list = table_composite_service.find(table_list_uuids[0])
     filename = metadatas.tables[i]
     database = metadatas.database[i]
     schema = metadatas.schema[i]

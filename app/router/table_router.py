@@ -26,6 +26,9 @@ def find(uuid: str, session: Session = Depends(db.session)):
 def create(request: Table_List_Create_Dto, session: Session = Depends(db.session)):
     composite_service.create(request, session)
 
+@router.put("/{uuid}/reset_pk")
+def update(uuid: str, request: Table_List_Update_Dto, session: Session = Depends(db.session)):
+    composite_service.update(uuid, request, session)
 
 @router.put("/{uuid}")
 def update(uuid: str, request: Table_List_Update_Dto, session: Session = Depends(db.session)):
