@@ -1,9 +1,12 @@
 import datetime as date
 from dataclasses import dataclass
+from typing import List
+
 from deprecated import deprecated
 
+
 @dataclass
-@deprecated(version='1.0.0', reason = "duplicated")
+@deprecated(version='1.0.0', reason="duplicated")
 class dag_info:
     yesterday: date = date.date.today() - date.timedelta(1)
     airflow_home: str = None
@@ -17,7 +20,7 @@ class dag_info:
 
 
 @dataclass
-@deprecated(version='1.0.0', reason = "duplicated")
+@deprecated(version='1.0.0', reason="duplicated")
 class db_info:
     db_type: int = None
     host: str = None
@@ -46,9 +49,10 @@ class user_data_carrier:
 
 
 @dataclass
-class user_all_data:
-    def __init__(self, dag_id, id, pwd, columns, pk, updated, upsert_rule, tables, database,
-                 csv_file_directory, warehouse='', option='', role='', schema=[], host='', port='',account=''):
+class User_All_Data:
+    def __init__(self, dag_id: str, id: str, pwd: str, columns: List[List[str]], pk: List[str], updated,
+                 upsert_rule: List[int], tables: List[str], database: str, csv_file_directory: str, warehouse: str = '',
+                 option: str = '', role: str = '', schema=[], host: str = '', port: str = '', account: str = ''):
         self.dag_id = dag_id
         self.host = host
         self.port = port
@@ -76,11 +80,11 @@ class user_all_data:
     warehouse: str = None
     option: str = None
     role: str = None
-    columns: list = None
-    pk: list = None
+    columns: List[List[str]] = None
+    pk: List[str] = None
     updated: list = None
     schema: list = None
-    upsert_rule: list = None
-    tables: list = None
+    upsert_rule: List[str] = None
+    tables: List[str] = None
     database: list = None
     csv_files_directory: str = None

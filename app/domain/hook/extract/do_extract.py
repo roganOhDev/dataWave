@@ -16,23 +16,26 @@ if not, works like truncate and
 else, works get max of updated_at(merge)/pk(increasement) and add sql like 'where updated >= max_updated_at_from_load'
 in every function
 """
+from typing import List
 
+import mysql.connector
 import sqlalchemy as sql
 
-from get_information_from_user.structs import user_all_data
 from app.domain.hook.extract.get_data_from_max_val import get_data_from_max_val
 from app.domain.hook.extract.get_db_info import get_db_info
+from app.domain.hook.extract.get_full_table import *
 from get_information_from_user.make_a_dag import get_backend
-from app.domain.hook.extract.get_full_table import get_full_table_amazon, get_full_table_snowflake
+from get_information_from_user.structs import User_All_Data
+from app.domain.elt_map.rule_set import Rule_Set
 
 backend_engine = sql.create_engine(get_backend())
 
 
-def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, directory, columns, pk, upsert, updated,
+def snowflake(dag_id, user, pwd, account, database, schema, warehouse, tables, directory, columns, pk, upsert, updated,
               role=''):
     """
     :param dag_id: name of user's dag
-    :param id: login_id
+    :param user: login_id
     :param pwd: login_password
     :param account: host without .snowflakecomputing.com
     :param database: user's database
@@ -52,7 +55,7 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
     :return: csv file that user want to execute from db.
     """
 
-    metadatas = user_all_data(dag_id, id, pwd, columns, pk, updated, upsert, tables, database, directory,
+    metadatas = User_All_Data(dag_id, user, pwd, columns, pk, updated, upsert, tables, database, directory,
                               warehouse, role=role, schema=schema, acount=account)
 
     ds, db_information = get_db_info(dag_id, backend_engine)
@@ -63,7 +66,7 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
         url_role = '&role={}'.format(role)
     engine = sql.create_engine(
         'snowflake://{u}:{p}@{a}/{d}/{s}?warehouse={w}&role={r}'.format(
-            u=id,
+            u=user,
             p=pwd,
             a=account,
             r=url_role,
@@ -80,10 +83,10 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
             get_data_from_max_val(engine, i, ds, db_information, metadatas)
 
 
-def postgresql(dag_id, id, pwd, host, port, database, schema, tables, directory, pk, upsert, updated, columns):
+def postgresql(dag_id, user, pwd, host, port, database, schema, tables, directory, pk, upsert, updated, columns):
     """
     :param dag_id: id for dag which made in make_a_dag.py
-    :param id: login id
+    :param user: login id
     :param pwd: login password
     :param host: db's host
     :param port: db's port
@@ -99,12 +102,13 @@ def postgresql(dag_id, id, pwd, host, port, database, schema, tables, directory,
     :param columns: user's columns
     :return: csv file of data
     """
-    metadatas = user_all_data(dag_id, id, pwd, columns, pk, updated, upsert, tables, database, directory, schema=schema,
+    metadatas = User_All_Data(dag_id, user, pwd, columns, pk, updated, upsert, tables, database, directory,
+                              schema=schema,
                               host=host, port=port)
     ds, db_information = get_db_info(dag_id, backend_engine)
 
     url = 'postgresql://{u}:{p}@{h}:{port}/{d}'.format(
-        u=id,
+        u=user,
         p=pwd,
         h=host,
         port=port,
@@ -119,10 +123,10 @@ def postgresql(dag_id, id, pwd, host, port, database, schema, tables, directory,
             get_data_from_max_val(engine, i, ds, db_information, metadatas)
 
 
-def redshift(dag_id, id, pwd, host, port, database, schema, tables, directory, pk, upsert, updated, columns):
+def redshift(dag_id, user, pwd, host, port, database, schema, tables, directory, pk, upsert, updated, columns):
     """
     :param dag_id: id for dag which made by make_a_dag.py
-    :param id: login id
+    :param user: login id
     :param pwd: login password
     :param host: db's host
     :param port: db's port
@@ -140,12 +144,13 @@ def redshift(dag_id, id, pwd, host, port, database, schema, tables, directory, p
     :rypte: list
     :return: csv files for data
     """
-    metadatas = user_all_data(dag_id, id, pwd, columns, pk, updated, upsert, tables, database, directory, schema=schema,
+    metadatas = User_All_Data(dag_id, user, pwd, columns, pk, updated, upsert, tables, database, directory,
+                              schema=schema,
                               host=host, port=port)
     ds, db_information = get_db_info(dag_id, backend_engine)
 
     url = 'redshift+psycopg2://{u}:{p}@{h}:{port}/{d}'.format(
-        u=id,
+        u=user,
         p=pwd,
         h=host,
         port=port,
@@ -160,41 +165,18 @@ def redshift(dag_id, id, pwd, host, port, database, schema, tables, directory, p
             get_data_from_max_val(engine, i, ds, db_information, metadatas)
 
 
-def mysql(dag_id, id, pwd, host, port, database, tables, directory, columns, pk, upsert, updated, option):
-    """
+def mysql(dag_id: str, user: str, pwd: str, host: str, port: str, database: str, tables: List[str], csv_files_directory: str,
+          columns: List[List[str]], pk: List[str], upsert: List[int], updated, option: str):
 
-    :param dag_id: user's dag_id which made in make_a_dag.py
-    :param id: login id
-    :param pwd: login password
-    :param host: db's host
-    :param port: db's port
-    :param database: user's database
-    :param tables: user's tables
-    :rtype: list
-    :param directory: directory where csv files will be saved.
-    :param columns: user's columns
-        :param upsert: by this param, this function will run differently.
-        :param pk: if upsert=increasement, pk=increase column elif upsert=merg, pk=primary key
-        :param updated: if upsert=increasement, updated=date column which will be benchmark
-        :rtype: list
-    :rtype: list
-    :param option: user's option when connect db
-    :return:
-    """
-    metadatas = user_all_data(dag_id, id, pwd, columns, pk, updated, upsert, tables, database, directory, option=option,
-                              host=host, port=port)
-    ds, db_information = get_db_info(dag_id, backend_engine)
-    engine = sql.create_engine('mysql+pymysql://{u}:{p}@{h}:{port}/{d}{option}'.format(
-        u=id,
-        p=pwd,
-        h=host,
-        port=port,
-        d=database[0],
-        option=option,
-    ), encoding='utf-8')
-    for i in range(len(tables)):
-        if upsert[i] == 'truncate':
-            get_full_table_amazon(i, metadatas, engine)
+    user_data = User_All_Data(dag_id, user, pwd, columns, pk, updated, upsert, tables, database, csv_files_directory,
+                              option=option, host=host, port=port)
 
-        elif upsert[i] in ('increasement', 'merge'):
-            get_data_from_max_val(engine, i, ds, db_information, metadatas)
+    connection = mysql.connector.connect(host=host, database=database, user=user, password=pwd, use_unicode=True,
+                                         charset=option)
+
+    for table, pk, column, rule_set in tables, pk, columns, upsert:
+        if rule_set == Rule_Set.TRUNCATE.value:
+            get_full_table_mysql(csv_files_directory, dag_id, connection, column, table)
+
+        elif rule_set in (Rule_Set.INCREASEMENT.value, Rule_Set.MERGE.value):
+            get_data_from_max_val(engine, i, ds, db_information, user_data)
