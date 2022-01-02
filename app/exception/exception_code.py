@@ -23,3 +23,4 @@ class ExceptionCode:
         ELT_MAP_NOT_FOUND = "DWS-0500"
         USING_DAG = "DWS-0501"
         CONNECTIONS_ARE_NOT_EQUAL = "DWS-0502"
+        NOT_EXIST_FILE = "DWS-0503"

@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from app.domain.connection import connection_composite_service
@@ -10,9 +11,11 @@ from app.domain.elt_map.create_dag.get_sql_alchemy_conn import get_sql_alchemy_c
 from app.domain.elt_map.elt_map import EltMap
 from app.domain.table import table_composite_service
 from app.domain.utils.list_converter_util import *
+from app.domain.utils.logger import logger
 from app.dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
 from app.exception.caanot_use_this_dag_exception import CannotUseThisDagException
 from app.exception.connections_are_not_equal import ConnectionsAreNotEqual
+from app.exception.not_exist_file_exception import NotExistFileException
 
 
 def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: EltMap) -> EltMap:
@@ -67,6 +70,7 @@ def activate(uuid: str, session: Session):
 def deactivate(uuid: str, session: Session):
     elt_map = service.find(uuid, session, True)
     elt_map.active = False
+    delete_file(elt_map, session)
     service.save(elt_map, session)
 
 
@@ -105,8 +109,13 @@ def create_file(elt_map: EltMap, session: Session):
         file.write('{}'.format(dag_code))
 
 
-def delete_file(elt_map: EltMap):
-    return 0
+def delete_file(elt_map: EltMap, session: Session):
+    dag = dag_composite_service.find(elt_map.dag_uuid, session)
+    file = dag.airflow_home + "/dags/" + dag.dag_id + ".py"
+    if os.path.isfile(file):
+        os.remove(file)
+    else:
+        logger.warning(msg="File Doesn't Exist")
 
 
 def get_extract_data_wave_raw_code(elt_map: EltMap, session: Session) -> str:

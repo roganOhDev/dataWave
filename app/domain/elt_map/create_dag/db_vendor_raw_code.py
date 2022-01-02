@@ -16,7 +16,7 @@ def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists:
     tables, columns, pks, rule_sets = map_table_info(table_lists)
     get_data = '''PythonOperator(
      task_id='{task_id}',
-     python_callable=getattr({func_name}, Db_Type.{db_type}.name),
+     python_callable=getattr({func_name}, Db_Type.{db_type}.name.lower()),
      op_kwargs = {{'user': "{user}",
             'pwd': "{pwd}",
             'host': "{host}",
