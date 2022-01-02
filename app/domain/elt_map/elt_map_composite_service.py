@@ -15,7 +15,6 @@ from app.domain.utils.logger import logger
 from app.dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
 from app.exception.caanot_use_this_dag_exception import CannotUseThisDagException
 from app.exception.connections_are_not_equal import ConnectionsAreNotEqual
-from app.exception.not_exist_file_exception import NotExistFileException
 
 
 def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: EltMap) -> EltMap:
