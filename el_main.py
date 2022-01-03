@@ -5,7 +5,7 @@
 
 Execute this file for get/give information!
 We must fix something but this is proto file for get informations.
-This file is for QueryPie_ELT. So UI must be exist front of this file.
+This file is for QueryPie_ELT. So UI must be exist data_wave_front of this file.
 After this code runs, a python file for elt will be made.
 
 :param owner: a person who made the job. If user didn't enter this info, default will be chequer
@@ -22,7 +22,7 @@ After this code runs, a python file for elt will be made.
 """
 import sqlalchemy as sql
 
-from app.domain.dag.dag_composite_service import dag_info
+from data_wave_backend.domain.dag.dag_composite_service import dag_info
 from get_information_from_user.get_db_info import get_db_info
 from get_information_from_user.make_a_dag import make_a_dag
 from get_information_from_user.manage_users_tables import make_tables_to_replicate, metadata_to_sql

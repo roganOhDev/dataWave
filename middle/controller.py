@@ -5,8 +5,8 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.responses import Response
 
-from app.domain.utils.logger import api_logger
-from app.exception.api_exception import ApiException
+from data_wave_backend.domain.utils.logger import api_logger
+from data_wave_backend.exception.api_exception import ApiException
 
 
 async def dispatch(request: Request, call_next: RequestResponseEndpoint) -> Response:

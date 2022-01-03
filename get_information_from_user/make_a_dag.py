@@ -10,7 +10,7 @@ Available functions:
 """
 import subprocess
 
-from app.domain.elt_map.create_dag import get_sql_alchemy_conn
+from data_wave_backend.domain.elt_map.create_dag import get_sql_alchemy_conn
 from get_information_from_user.const_value import db
 
 

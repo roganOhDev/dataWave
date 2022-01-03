@@ -7,7 +7,7 @@ from get_information_from_user.structs import user_data_carrier
 def create_integrate_carrier(db_type, dag_id):
     integrate_carrier = get_tables(db_type)
     integrate_carrier.upsert_rule = get_correct_upsert_rule(integrate_carrier.tables)
-    # user must write columns above those are for front end and test
+    # user must write columns above those are for data_wave_front end and test
     integrate_carrier.columns = get_useable_columns(integrate_carrier.tables)
     integrate_carrier.pk, integrate_carrier.updated = get_pk_and_updated(integrate_carrier)
     integrate_carrier.dag_ids = [dag_id] * len(integrate_carrier.tables)
