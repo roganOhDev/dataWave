@@ -16,17 +16,23 @@ if not, works like truncate and
 else, works get max of updated_at(merge)/pk(increasement) and add sql like 'where updated >= max_updated_at_from_load'
 in every function
 """
+from datetime import datetime
+from typing import Any, List
 
 import mysql.connector
+import pandas as pd
 import sqlalchemy as sql
+from croniter import croniter
 
 from common.utils.json_util import loads
+from common.utils.list_converter import convert_str_list_to_string
 from domain.enums.elt_map import Rule_Set
 from domain.services import table
-from hook.extract.get_data_by_cron_expression import *
-from hook.extract.get_data_by_max_val import *
+from exception.engine_exception import EngineException
+from hook.extract.get_data_by_cron_expression import Get_Data_By_Cron_Expression
+from hook.extract.get_data_by_max_pk import Get_Data_By_Max_Pk
 from hook.extract.get_db_info import get_db_info
-from hook.extract.get_full_table import *
+from hook.extract.get_full_table import Get_Full_table
 from hook.get_information_from_user.structs import User_All_Data
 
 
@@ -171,16 +177,44 @@ def mysql(dag_id: str, user: str, pwd: str, host: str, port: str, database: str,
     connection = mysql.connector.connect(host=host, database=database, user=user, password=pwd, use_unicode=True,
                                          charset=option)
 
-    for table, pk, column, rule_set, table_pk_max, updated_column in tables, pks, columns, rule_sets, tables_pk_max, updated_columns:
-        if rule_set == Rule_Set.TRUNCATE.value or (rule_set == Rule_Set.MERGE.value and cron_expression == "@once"):
-            get_full_table_mysql(csv_files_directory, dag_id, connection, column, table)
+    for table, pk, column_list, rule_set, table_pk_max, updated_column in tables, pks, columns, rule_sets, tables_pk_max, updated_columns:
+        column_list_str = convert_str_list_to_string(column_list)
 
-        elif rule_set == Rule_Set.INCREASEMENT.value:
-            get_data_by_max_val_mysql(csv_files_directory, dag_id, connection, table, column, pk, table_pk_max)
+        if rule_set == Rule_Set.TRUNCATE.value or (rule_set == Rule_Set.MERGE.value and cron_expression == "@once"):
+
+            sql_data = (table, column_list_str)
+            extract(Get_Full_table.MYSQL, sql_data, connection, csv_files_directory, dag_id, table)
 
         elif rule_set == Rule_Set.MERGE.value:
-            get_data_by_cron_expression_mysql(csv_files_directory, dag_id, connection, table, column, updated_column,
-                                              cron_expression)
+
+            before_time = get_before_update_time(cron_expression)
+            sql_data = (table, column_list_str, updated_column, str(before_time))
+            extract(Get_Data_By_Cron_Expression.MYSQL, sql_data, connection, csv_files_directory, dag_id, table)
+
+        elif rule_set == Rule_Set.INCREASEMENT.value:
+
+            sql_data = (table, column_list_str, pk, table_pk_max)
+            extract(Get_Data_By_Max_Pk.MYSQL, sql_data, connection, csv_files_directory, dag_id, table)
+
+
+def get_before_update_time(cron_expression: str) -> datetime:
+    base = datetime.now()
+    cron = croniter(cron_expression, base)
+    return cron.get_prev(datetime)
+
+
+def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directory: str, dag_id: str, table: str):
+    try:
+        cursor = connection.cursor()
+        cursor.execute(sql_select, sql_data)
+        records = cursor.fetchall()
+    except Exception as e:
+        raise EngineException(str(e))
+
+    data = pd.DataFrame(records)
+
+    data.to_csv(csv_files_directory + '/' + dag_id + '_' + table + '.csv', sep=',', quotechar="'", na_rep='NaN',
+                index=False)
 
 
 def map_table_info(table_list_uuids: List[str]) -> ([str], [[str]], [str], [int], [int], [str]):

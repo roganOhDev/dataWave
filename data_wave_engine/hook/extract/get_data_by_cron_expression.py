@@ -8,6 +8,16 @@ from mysql.connector.abstracts import MySQLConnectionAbstract
 from common.utils.list_converter import convert_str_list_to_string
 from exception.engine_exception import EngineException
 
+class Get_Data_By_Cron_Expression:
+    '''
+    mysql : column , table, updated_column, before_time
+    snowflake : column , schema, table
+    mysql : column , schema, table
+    '''
+    MYSQL = "select %s from %s,%s where %s >= %s"
+    SNOWFLAKE = "select %s from %s,%s where %s >= %s"
+    AMAZON = "select %s from %s,%s where %s >= %s"
+
 
 def get_data_by_cron_expression_mysql(csv_files_directory: str, dag_id: str, connection: MySQLConnectionAbstract,
                                       column_list: List[str], table: str, updated_column: str, cron_expression: str):
@@ -29,7 +39,3 @@ def get_data_by_cron_expression_mysql(csv_files_directory: str, dag_id: str, con
                 index=False)
 
 
-def get_before_update_time(cron_expression: str) -> datetime:
-    base = datetime.now()
-    cron = croniter(cron_expression, base)
-    return cron.get_prev(datetime)
