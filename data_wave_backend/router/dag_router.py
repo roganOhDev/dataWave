@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from starlette.responses import Response
 
-from data_wave_backend.common.database import db
-from data_wave_backend.domain.dag import dag_composite_service as composite_service
-from data_wave_backend.dto.dag_info_dto import *
+from common.database import db
+from domain.dag import dag_composite_service as composite_service
+from dto.dag_info_dto import *
 
 router = APIRouter()
 

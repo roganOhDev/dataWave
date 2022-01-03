@@ -2,10 +2,10 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.dag import dag_repository as repository
-from data_wave_backend.domain.dag.dag_infoes import DagInfo
-from data_wave_backend.exception.dag_not_found_exception import DagNotFoundException
-from data_wave_backend.exception.using_dag_exception import UsingDagException
+from domain.dag import dag_repository as repository
+from domain.dag.dag_infoes import DagInfo
+from exception.dag_not_found_exception import DagNotFoundException
+from exception.using_dag_exception import UsingDagException
 
 
 def find_by_dag_id(dag_id: str, session: Session) -> DagInfo:

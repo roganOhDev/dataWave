@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-from data_wave_backend.domain.elt_map.create_dag import get_sql_alchemy_conn
+from domain.elt_map.create_dag import get_sql_alchemy_conn
 
 
 def get_airflow_home_and_backend_url():

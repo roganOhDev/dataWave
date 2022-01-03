@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.connection.connection import Connection
+from domain.connection.connection import Connection
 
 
 def find(uuid: str, session: Session) -> Connection:

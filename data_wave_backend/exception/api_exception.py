@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 
-from data_wave_backend.domain.utils.logger import logger
+from domain.utils.logger import logger
 
 
 class ApiException(HTTPException):

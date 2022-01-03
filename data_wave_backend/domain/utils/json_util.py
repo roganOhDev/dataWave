@@ -1,7 +1,7 @@
 import datetime
 import json as base_json
 
-from data_wave_backend.exception.type_exception import TypeException
+from exception.type_exception import TypeException
 
 
 def json(data):

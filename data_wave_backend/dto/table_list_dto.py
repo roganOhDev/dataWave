@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from data_wave_backend.domain.table.table_list import Table_List
+from domain.table.table_list import Table_List
 
 
 class Column_Info(BaseModel):

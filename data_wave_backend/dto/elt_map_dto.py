@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from data_wave_backend.domain.elt_map.elt_map import EltMap
+from domain.elt_map.elt_map import EltMap
 
 
 class EltMapSaveDto(BaseModel):

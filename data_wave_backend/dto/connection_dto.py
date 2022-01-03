@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from data_wave_backend.domain.connection.connection import Connection
+from domain.connection.connection import Connection
 
 
 class BaseConnectionSaveDto(BaseModel):

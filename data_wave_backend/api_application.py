@@ -3,11 +3,11 @@ from fastapi import FastAPI
 from starlette.middleware.base import BaseHTTPMiddleware
 from uvicorn.config import LOGGING_CONFIG
 
-from data_wave_backend.common.database import db
-from data_wave_backend.router import connection_router
-from data_wave_backend.router import dag_router
-from data_wave_backend.router import elt_map_router
-from data_wave_backend.router import table_router
+from common.database import db
+from router import connection_router
+from router import dag_router
+from router import elt_map_router
+from router import table_router
 from middle.controller import dispatch
 
 

@@ -4,15 +4,15 @@ from typing import List
 import mysql.connector
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.connection import connection_composite_service
-from data_wave_backend.domain.connection.db_type import Db_Type
-from data_wave_backend.domain.table import table_list_service
-from data_wave_backend.domain.table.table_list import Table_List
-from data_wave_backend.domain.utils.json_util import json
-from data_wave_backend.domain.utils.query import *
-from data_wave_backend.dto.table_list_dto import Table_List_Create_Dto, of, Table_List_Dto, Table_List_Update_Dto
-from data_wave_backend.exception.cannot_show_table import CannotShowTable
-from data_wave_backend.exception.columns_not_include_pk_exception import ColumnsNotIncludePk
+from domain.connection import connection_composite_service
+from domain.connection.db_type import Db_Type
+from domain.table import table_list_service
+from domain.table.table_list import Table_List
+from domain.utils.json_util import json
+from domain.utils.query import *
+from dto.table_list_dto import Table_List_Create_Dto, of, Table_List_Dto, Table_List_Update_Dto
+from exception.cannot_show_table import CannotShowTable
+from exception.columns_not_include_pk_exception import ColumnsNotIncludePk
 
 
 def create(request: Table_List_Create_Dto, session: Session):

@@ -3,12 +3,12 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.dag import dag_service as service
-from data_wave_backend.domain.dag.dag_infoes import DagInfo
-from data_wave_backend.domain.os.get_pwd import *
-from data_wave_backend.dto import dag_info_dto
-from data_wave_backend.dto.elt_map_dto import EltMapSaveDto
-from data_wave_backend.exception.already_exists_dag_id_exception import AlreadyExistsDagIdException
+from domain.dag import dag_service as service
+from domain.dag.dag_infoes import DagInfo
+from domain.os.get_pwd import *
+from dto import dag_info_dto
+from dto.elt_map_dto import EltMapSaveDto
+from exception.already_exists_dag_id_exception import AlreadyExistsDagIdException
 
 
 def save(request: dag_info_dto.DagCreateDto, session: Session):

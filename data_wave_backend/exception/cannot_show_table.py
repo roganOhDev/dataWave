@@ -1,8 +1,8 @@
 import json
 
-from data_wave_backend.exception.api_exception import ApiException
-from data_wave_backend.exception.exception_code import ExceptionCode
-from data_wave_backend.domain.utils.logger import logger
+from exception.api_exception import ApiException
+from exception.exception_code import ExceptionCode
+from domain.utils.logger import logger
 
 
 class CannotShowTable(ApiException):

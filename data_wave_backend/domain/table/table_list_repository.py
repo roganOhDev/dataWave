@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.table.table_list import Table_List
-from data_wave_backend.domain.utils.logger import logger
-from data_wave_backend.exception.api_exception import ApiException
+from domain.table.table_list import Table_List
+from domain.utils.logger import logger
+from exception.api_exception import ApiException
 
 
 def save(table_list: Table_List, session: Session):

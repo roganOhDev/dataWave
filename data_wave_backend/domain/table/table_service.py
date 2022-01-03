@@ -2,11 +2,11 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.connection.connection import Connection
-from data_wave_backend.domain.dag.dag_infoes import DagInfo
-from data_wave_backend.domain.table.table_list import Table_List
-from data_wave_backend.exception.dag_not_found_exception import DagNotFoundException
-from data_wave_backend.domain.table import table_repository as repository
+from domain.connection.connection import Connection
+from domain.dag.dag_infoes import DagInfo
+from domain.table.table_list import Table_List
+from exception.dag_not_found_exception import DagNotFoundException
+from domain.table import table_repository as repository
 
 def find_by_dag_id(dag_id: str, session: Session) -> DagInfo:
     return session.query(DagInfo).filter(DagInfo.dag_id == dag_id).first()

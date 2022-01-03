@@ -2,9 +2,9 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.table import table_list_repository as repository
-from data_wave_backend.domain.table.table_list import Table_List
-from data_wave_backend.exception.table_list_not_found_exception import TableListNotFoundException
+from domain.table import table_list_repository as repository
+from domain.table.table_list import Table_List
+from exception.table_list_not_found_exception import TableListNotFoundException
 
 
 def save(table_list: Table_List, session: Session):

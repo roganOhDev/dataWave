@@ -16,14 +16,13 @@ if not, works like truncate and
 else, works get max of updated_at(merge)/pk(increasement) and add sql like 'where updated >= max_updated_at_from_load'
 in every function
 """
-from typing import List
 
 import mysql.connector
 import sqlalchemy as sql
 
-from data_wave_backend.domain.hook.extract.get_data_from_max_val import get_data_from_max_val
-from data_wave_backend.domain.hook.extract.get_db_info import get_db_info
-from data_wave_backend.domain.hook.extract.get_full_table import *
+from data_wave_engine.hook.extract.get_data_from_max_val import get_data_from_max_val
+from data_wave_engine.hook.extract.get_db_info import get_db_info
+from data_wave_engine.hook.extract.get_full_table import *
 from get_information_from_user.make_a_dag import get_backend
 from get_information_from_user.structs import User_All_Data
 from data_wave_backend.domain.elt_map.rule_set import Rule_Set

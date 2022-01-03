@@ -2,9 +2,9 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.elt_map import elt_map_repository as repository
-from data_wave_backend.domain.elt_map.elt_map import EltMap
-from data_wave_backend.exception.elt_map_not_found_exception import EltMapNotFoundException
+from domain.elt_map import elt_map_repository as repository
+from domain.elt_map.elt_map import EltMap
+from exception.elt_map_not_found_exception import EltMapNotFoundException
 
 
 def find(uuid: str, session: Session, validate: bool) -> EltMap:

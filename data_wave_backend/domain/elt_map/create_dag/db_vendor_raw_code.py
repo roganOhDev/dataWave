@@ -2,10 +2,10 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.utils.json_util import loads
-from data_wave_backend.dto.connection_dto import ConnectionDto
-from data_wave_backend.dto.dag_info_dto import DagInfoDto
-from data_wave_backend.dto.table_list_dto import Table_List_Dto
+from domain.utils.json_util import loads
+from dto.connection_dto import ConnectionDto
+from dto.dag_info_dto import DagInfoDto
+from dto.table_list_dto import Table_List_Dto
 
 
 def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists: List[Table_List_Dto],

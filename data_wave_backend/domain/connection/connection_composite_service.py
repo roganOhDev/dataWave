@@ -3,13 +3,13 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.connection import connection_service as service
-from data_wave_backend.domain.connection import db_type
-from data_wave_backend.domain.connection.connection import Connection
-from data_wave_backend.dto import connection_dto
-from data_wave_backend.exception.connection_not_found_exception import ConnectionNotFoundException
-from data_wave_backend.exception.empty_value_exception import EmptyValueException
-from data_wave_backend.exception.not_supported_db_type_exception import NotSupportedDbTypeException
+from domain.connection import connection_service as service
+from domain.connection import db_type
+from domain.connection.connection import Connection
+from dto import connection_dto
+from exception.connection_not_found_exception import ConnectionNotFoundException
+from exception.empty_value_exception import EmptyValueException
+from exception.not_supported_db_type_exception import NotSupportedDbTypeException
 
 
 def save(request: connection_dto.BaseConnectionSaveDto, session: Session):

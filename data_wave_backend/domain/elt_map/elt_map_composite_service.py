@@ -1,20 +1,19 @@
 import os
 from datetime import datetime
 
-from data_wave_backend.domain.connection import connection_composite_service
-from data_wave_backend.domain.connection.db_type import Db_Type
-from data_wave_backend.domain.dag import dag_composite_service
-from data_wave_backend.domain.elt_map import elt_map_service as service
-from data_wave_backend.domain.elt_map.create_dag.dag_format import dag_format
-from data_wave_backend.domain.elt_map.create_dag.db_vendor_raw_code import *
-from data_wave_backend.domain.elt_map.create_dag.get_sql_alchemy_conn import get_sql_alchemy_conn
-from data_wave_backend.domain.elt_map.elt_map import EltMap
-from data_wave_backend.domain.table import table_composite_service
-from data_wave_backend.domain.utils.list_converter_util import *
-from data_wave_backend.domain.utils.logger import logger
-from data_wave_backend.dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
-from data_wave_backend.exception.caanot_use_this_dag_exception import CannotUseThisDagException
-from data_wave_backend.exception.connections_are_not_equal import ConnectionsAreNotEqual
+from domain.connection import connection_composite_service
+from domain.connection.db_type import Db_Type
+from domain.dag import dag_composite_service
+from domain.elt_map import elt_map_service as service
+from domain.elt_map.create_dag.dag_format import dag_format
+from domain.elt_map.create_dag.db_vendor_raw_code import *
+from domain.elt_map.elt_map import EltMap
+from domain.table import table_composite_service
+from domain.utils.list_converter_util import *
+from domain.utils.logger import logger
+from dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
+from exception.caanot_use_this_dag_exception import CannotUseThisDagException
+from exception.connections_are_not_equal import ConnectionsAreNotEqual
 
 
 def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: EltMap) -> EltMap:

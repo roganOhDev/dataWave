@@ -3,9 +3,9 @@ dag_format = """
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 
-from data_wave_backend.domain.connection.db_type import Db_Type
-from data_wave_backend.domain.hook.extract import do_extract
-from data_wave_backend.domain.hook.load import do_load
+from domain.connection.db_type import Db_Type
+from data_wave_engine.hook.extract import do_extract
+from data_wave_engine.hook.load import do_load
 
 default_args = {{
     'owner': "{owner}",

@@ -2,8 +2,8 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, DateTime
 
-from data_wave_backend.common.database import Base
-from data_wave_backend.domain.utils import uuid_util
+from common.database import Base
+from domain.utils import uuid_util
 
 
 class Table_List(Base):

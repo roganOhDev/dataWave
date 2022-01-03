@@ -3,9 +3,9 @@ from typing import List
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from data_wave_backend.common.database import db
-from data_wave_backend.domain.elt_map import elt_map_composite_service as composite_service
-from data_wave_backend.dto.elt_map_dto import EltMapDto, EltMapSaveDto
+from common.database import db
+from domain.elt_map import elt_map_composite_service as composite_service
+from dto.elt_map_dto import EltMapDto, EltMapSaveDto
 
 router = APIRouter()
 

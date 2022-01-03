@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.elt_map.elt_map import EltMap
+from domain.elt_map.elt_map import EltMap
 
 
 def find(uuid: str, session: Session) -> EltMap:

@@ -3,7 +3,7 @@ from typing import List
 from multipledispatch import dispatch
 from sqlalchemy.orm import Session
 
-from data_wave_backend.domain.dag.dag_infoes import DagInfo
+from domain.dag.dag_infoes import DagInfo
 
 
 @dispatch(str, Session)
