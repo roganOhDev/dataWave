@@ -13,7 +13,7 @@ def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists:
                         session: Session) -> str:
     task_id = 'do_extract' if connection_type == 'extract' else 'do_load'
     func_name = 'do_extract' if connection_type == 'extract' else 'do_load'
-    tables, columns, pks, rule_sets, tables_pk_max = map_table_info(table_lists)
+    table_list_uuids = map(lambda table_list: table_list.uuid, table_lists)
     get_data = '''PythonOperator(
      task_id='{task_id}',
      python_callable=getattr({func_name}, Db_Type.{db_type}.name.lower()),
@@ -23,13 +23,10 @@ def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists:
             'port': "{port}",
             'database': "{database}",
             'csv_files_directory': "{csv_files_directory}",
-            'tables': {tables},
             'option': '{option}',
-            'columns': {columns},
-            'pk': {pk},
-            'upsert': {upsert},
             'dag_id': "{dag_id}",
-            'tables_pk_max': "{tables_pk_max}"}},
+            'cron_expression': "{cron_expression}",
+            'table_list_uuids': "{table_list_uuids}"}},
          dag=dag
      )'''.format(task_id=task_id,
                  func_name=func_name,
@@ -41,12 +38,9 @@ def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists:
                  database=connection.database,
                  csv_files_directory=dag.csv_files_directory,
                  option=connection.option,
-                 tables=tables,
-                 columns=columns,
-                 pk=pks,
-                 upsert=rule_sets,
+                 table_list_uuids=table_list_uuids,
+                 cron_expression=dag.schedule_interval,
                  dag_id=dag.dag_id,
-                 tables_pk_max=tables_pk_max
                  )
     return get_data
 
@@ -153,18 +147,6 @@ def make_amazon_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists
                          )
 
 
-def map_table_info(table_lists: List[Table_List_Dto]) -> ([str], [str], [str], [str], [int]):
-    tables = []
-    columns = []
-    pks = []
-    rule_sets = []
-    tables_pk_max = []
-    for table_list in table_lists:
-        column_info = loads(table_list.columns_info)
-        tables.append(column_info['table_name'])
-        columns.append(column_info['columns'])
-        pks.append(column_info['pk'])
-        rule_sets.append(column_info['rule_set'])
-        tables_pk_max.append(table_list.max_pk)
-
-    return tables, columns, pks, rule_sets, tables_pk_max
+def map_table_info(table_lists: List[Table_List_Dto]) -> [str]:
+    uuids = map(lambda table_list : table_list.uuid , table_lists)
+    return uuids

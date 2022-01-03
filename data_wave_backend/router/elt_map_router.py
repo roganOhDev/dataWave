@@ -26,7 +26,7 @@ def activate(uuid: str, session: Session = Depends(db.session)):
 
 
 @router.put("/deactivate")
-def activate(uuid: str, session: Session = Depends(db.session)):
+def deactivate(uuid: str, session: Session = Depends(db.session)):
     composite_service.deactivate(uuid, session)
 
 

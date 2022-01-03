@@ -3,7 +3,7 @@ from typing import List
 import pandas as pd
 from mysql.connector.abstracts import MySQLConnectionAbstract
 
-from data_wave_backend.domain.utils.list_converter_util import *
+from common.utils.list_converter import *
 from data_wave_backend.exception.api_exception import ApiException
 
 

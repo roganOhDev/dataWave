@@ -1,7 +1,7 @@
 import pandas as pd
 
-from get_information_from_user.const_value import *
-from get_information_from_user.structs import db_info
+from data_wave_engine.hook.get_information_from_user.const_value import *
+from data_wave_engine.hook.get_information_from_user.structs import db_info
 
 
 def get_db_info(dag, type):

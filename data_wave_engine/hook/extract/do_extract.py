@@ -20,14 +20,14 @@ in every function
 import mysql.connector
 import sqlalchemy as sql
 
-from data_wave_engine.hook.extract.get_data_from_max_val import get_data_from_max_val
-from data_wave_engine.hook.extract.get_db_info import get_db_info
-from data_wave_engine.hook.extract.get_full_table import *
-from get_information_from_user.make_a_dag import get_backend
-from get_information_from_user.structs import User_All_Data
-from data_wave_backend.domain.elt_map.rule_set import Rule_Set
-
-backend_engine = sql.create_engine(get_backend())
+from common.utils.json_util import loads
+from domain.enums.elt_map import Rule_Set
+from domain.services import table
+from hook.extract.get_data_by_cron_expression import *
+from hook.extract.get_data_by_max_val import *
+from hook.extract.get_db_info import get_db_info
+from hook.extract.get_full_table import *
+from hook.get_information_from_user.structs import User_All_Data
 
 
 def snowflake(dag_id, user, pwd, account, database, schema, warehouse, tables, directory, columns, pk, upsert, updated,
@@ -79,7 +79,7 @@ def snowflake(dag_id, user, pwd, account, database, schema, warehouse, tables, d
             get_full_table_snowflake(i, metadatas, engine)
 
         elif upsert[i] in ('increasement', 'merge'):
-            get_data_from_max_val(engine, i, ds, db_information, metadatas)
+            get_data_by_max_val_mysql(engine, i, ds, db_information, metadatas)
 
 
 def postgresql(dag_id, user, pwd, host, port, database, schema, tables, directory, pk, upsert, updated, columns):
@@ -119,7 +119,7 @@ def postgresql(dag_id, user, pwd, host, port, database, schema, tables, director
             get_full_table_amazon(i, metadatas, engine)
 
         elif upsert[i] in ('increasement', 'merge'):
-            get_data_from_max_val(engine, i, ds, db_information, metadatas)
+            get_data_by_max_val_mysql(engine, i, ds, db_information, metadatas)
 
 
 def redshift(dag_id, user, pwd, host, port, database, schema, tables, directory, pk, upsert, updated, columns):
@@ -161,21 +161,43 @@ def redshift(dag_id, user, pwd, host, port, database, schema, tables, directory,
             get_full_table_amazon(i, metadatas, engine)
 
         elif upsert[i] in ('increasement', 'merge'):
-            get_data_from_max_val(engine, i, ds, db_information, metadatas)
+            get_data_by_max_val_mysql(engine, i, ds, db_information, metadatas)
 
 
-def mysql(dag_id: str, user: str, pwd: str, host: str, port: str, database: str, tables: List[str], csv_files_directory: str,
-          columns: List[List[str]], pk: List[str], upsert: List[int],tables_pk_max: List[int], updated, option: str):
-
-    user_data = User_All_Data(dag_id, user, pwd, columns, pk, updated, upsert, tables, database, csv_files_directory,
-                              option=option, host=host, port=port)
+def mysql(dag_id: str, user: str, pwd: str, host: str, port: str, database: str, tables: List[str],
+          csv_files_directory: str, cron_expression: str, table_list_uuids: List[str], option: str):
+    tables, columns, pks, rule_sets, tables_pk_max, updated_columns = map_table_info(table_list_uuids)
 
     connection = mysql.connector.connect(host=host, database=database, user=user, password=pwd, use_unicode=True,
                                          charset=option)
 
-    for table, pk, column, rule_set in tables, pk, columns, upsert:
-        if rule_set == Rule_Set.TRUNCATE.value:
+    for table, pk, column, rule_set, table_pk_max, updated_column in tables, pks, columns, rule_sets, tables_pk_max, updated_columns:
+        if rule_set == Rule_Set.TRUNCATE.value or (rule_set == Rule_Set.MERGE.value and cron_expression == "@once"):
             get_full_table_mysql(csv_files_directory, dag_id, connection, column, table)
 
-        elif rule_set in (Rule_Set.INCREASEMENT.value, Rule_Set.MERGE.value):
-            get_data_from_max_val(tables_pk_max,engine, i, ds, db_information, user_data)
+        elif rule_set == Rule_Set.INCREASEMENT.value:
+            get_data_by_max_val_mysql(csv_files_directory, dag_id, connection, table, column, pk, table_pk_max)
+
+        elif rule_set == Rule_Set.MERGE.value:
+            get_data_by_cron_expression_mysql(csv_files_directory, dag_id, connection, table, column, updated_column,
+                                              cron_expression)
+
+
+def map_table_info(table_list_uuids: List[str]) -> ([str], [[str]], [str], [int], [int], [str]):
+    updated_columns = []
+    tables = []
+    columns = []
+    pks = []
+    rule_sets = []
+    tables_pk_max = []
+    for table_list_uuid in table_list_uuids:
+        table_list = table.find(table_list_uuid)
+        column_info = loads(table_list.columns_info)
+        tables.append(column_info['table_name'])
+        columns.append(column_info['columns'])
+        pks.append(column_info['pk'])
+        rule_sets.append(column_info['rule_set'])
+        updated_columns.appnend(table_list.updated_at)  # TODO: updated_column
+        tables_pk_max.append(table_list.max_pk)
+
+    return tables, columns, pks, rule_sets, tables_pk_max, updated_columns

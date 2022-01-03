@@ -1,7 +1,7 @@
 import pandas as pd
 
-from get_information_from_user.const_value import *
-from get_information_from_user.structs import user_data_carrier
+from data_wave_engine.hook.get_information_from_user.const_value import *
+from data_wave_engine.hook.get_information_from_user.structs import user_data_carrier
 
 
 def create_integrate_carrier(db_type, dag_id):
