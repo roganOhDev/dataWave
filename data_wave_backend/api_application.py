@@ -34,7 +34,7 @@ app = create_app()
 def run():
     LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s [%(name)s] %(levelprefix)s %(message)s"
     # TODO: reload 떼기
-    uvicorn.run("main:data_wave_backend", host="0.0.0.0", port=8000, reload=True, use_colors=True)
+    uvicorn.run("api_application:app", host="0.0.0.0", port=8000, reload=True, use_colors=True)
 
 
 if __name__ == "__main__":
