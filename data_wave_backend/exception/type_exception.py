@@ -10,7 +10,7 @@ class TypeException(ApiException):
         self.status_code: int = 500
         self.code: str = ExceptionCode.TYPE_EXCEPTION
         self.message: str = type_name + ' : not JSON serializable'
-        self.detail: str = json.dumps({"ApiException": {"code": self.code, "detail": self.message}})
+        self.detail: str = json.dumps({"code": self.code, "detail": self.message})
         super().log()
 
     def __repr__(self) -> str:

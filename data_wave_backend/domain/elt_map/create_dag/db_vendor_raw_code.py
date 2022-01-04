@@ -2,7 +2,6 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from domain.utils.json_util import loads
 from dto.connection_dto import ConnectionDto
 from dto.dag_info_dto import DagInfoDto
 from dto.table_list_dto import Table_List_Dto

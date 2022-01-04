@@ -5,7 +5,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.responses import Response
 
-from domain.utils.logger import api_logger
+from common.utils.logger import api_logger
 from exception.api_exception import ApiException
 
 

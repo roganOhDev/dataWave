@@ -9,7 +9,7 @@ class DagNotFoundException(ApiException):
         self.status_code: int = 500
         self.code: str = ExceptionCode.EMPTY_VALUE_EXCEPTION
         self.message: str = "dag not found"
-        self.detail: str = json.dumps({"ApiException": {"code": self.code, "detail": self.message}})
+        self.detail: str = json.dumps({"code": self.code, "detail": self.message})
         super().log()
 
     def __repr__(self) -> str:

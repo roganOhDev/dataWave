@@ -9,7 +9,7 @@ class EmptyValueException(ApiException):
         self.status_code: int = 500
         self.code: str = ExceptionCode.EMPTY_VALUE_EXCEPTION
         self.message: str = "empty value exception"
-        self.detail: str = json.dumps({"ApiException": {"code": self.code, "detail": self.message}})
+        self.detail: str = json.dumps({"code": self.code, "detail": self.message})
         super().log()
 
     def __repr__(self) -> str:

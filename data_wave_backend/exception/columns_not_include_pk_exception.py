@@ -9,7 +9,7 @@ class ColumnsNotIncludePk(ApiException):
         self.status_code: int = 500
         self.code: str = ExceptionCode.Table_List.COLUMNS_NOT_INCLUDE_PK
         self.message: str = "pk is not in columns"
-        self.detail: str = json.dumps({"ApiException": {"code": self.code, "detail": self.message}})
+        self.detail: str = json.dumps({"code": self.code, "detail": self.message})
         super().log()
 
     def __repr__(self) -> str:

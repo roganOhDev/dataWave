@@ -8,8 +8,8 @@ from domain.connection import connection_composite_service
 from domain.connection.db_type import Db_Type
 from domain.table import table_list_service
 from domain.table.table_list import Table_List
-from domain.utils.json_util import json
-from domain.utils.query import *
+from common.utils.json_util import json
+from common.utils.query import *
 from dto.table_list_dto import Table_List_Create_Dto, of, Table_List_Dto, Table_List_Update_Dto
 from exception.cannot_show_table import CannotShowTable
 from exception.columns_not_include_pk_exception import ColumnsNotIncludePk

@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 
 from common.database import Base
-from domain.utils import uuid_util
+from common.utils import uuid_util
 
 
 class EltMap(Base):

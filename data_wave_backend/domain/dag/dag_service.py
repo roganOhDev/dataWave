@@ -15,7 +15,7 @@ def find_by_dag_id(dag_id: str, session: Session) -> DagInfo:
 def find(uuid: str, session: Session, validate: bool) -> DagInfo:
     dag = repository.find(uuid, session, validate)
     if validate & (not dag):
-        raise DagNotFoundException
+        raise DagNotFoundException()
     return dag
 
 

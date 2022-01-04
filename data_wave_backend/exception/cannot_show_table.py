@@ -2,7 +2,6 @@ import json
 
 from exception.api_exception import ApiException
 from exception.exception_code import ExceptionCode
-from domain.utils.logger import logger
 
 
 class CannotShowTable(ApiException):

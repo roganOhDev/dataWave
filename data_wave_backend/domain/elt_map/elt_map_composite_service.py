@@ -9,8 +9,7 @@ from domain.elt_map.create_dag.dag_format import dag_format
 from domain.elt_map.create_dag.db_vendor_raw_code import *
 from domain.elt_map.elt_map import EltMap
 from domain.table import table_composite_service
-from domain.utils.list_converter_util import *
-from domain.utils.logger import logger
+from common.utils.logger import logger
 from dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
 from exception.caanot_use_this_dag_exception import CannotUseThisDagException
 from exception.connections_are_not_equal import ConnectionsAreNotEqual

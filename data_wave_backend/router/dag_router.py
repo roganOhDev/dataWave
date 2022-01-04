@@ -1,8 +1,7 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
-from starlette.responses import Response
 
 from common.database import db
 from domain.dag import dag_composite_service as composite_service
@@ -16,12 +15,12 @@ def create(request: DagCreateDto, session: Session = Depends(db.session)):
     return Response(content=composite_service.save(request, session), media_type="application/json")
 
 
-@router.put("/{uuid}", response_model=DagUpdateDto)
+@router.put("/{uuid}")
 def update(uuid: str, request: DagUpdateDto, session: Session = Depends(db.session)):
     return Response(content=composite_service.update(uuid, request, session), media_type="application/json")
 
 
-@router.get("", response_model=DagInfoDto)
+@router.get("")
 def find(uuid: str, session: Session = Depends(db.session)):
     return composite_service.find(uuid, session)
 

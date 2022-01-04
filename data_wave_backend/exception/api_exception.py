@@ -1,6 +1,8 @@
+import json
+
 from fastapi import HTTPException
 
-from domain.utils.logger import logger
+from common.utils.logger import logger
 
 
 class ApiException(HTTPException):

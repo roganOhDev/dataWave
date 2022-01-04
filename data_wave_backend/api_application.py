@@ -1,14 +1,20 @@
+import traceback
+
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 from uvicorn.config import LOGGING_CONFIG
 
 from common.database import db
+from common.utils.logger import logger
+from exception.api_exception import ApiException
+from middle.controller import dispatch
 from router import connection_router
 from router import dag_router
 from router import elt_map_router
 from router import table_router
-from middle.controller import dispatch
 
 
 def create_app():
@@ -29,6 +35,26 @@ def add_router(app_birth):
 
 
 app = create_app()
+
+
+async def catch_exceptions_middleware(request: Request, call_next):
+    try:
+        return await call_next(request)
+    except Exception as e:
+        logger.error(traceback.format_exc())
+        error_dict = dict(error="Server Internal Error", detail=str(e))
+        return JSONResponse(status_code=500, content=error_dict)
+
+
+@app.exception_handler(ApiException)
+async def api_exception_handler(request: Request, exc: ApiException):
+    logger.error(traceback.format_exc())
+    error_dict = dict(error="ApiException", detail=exc.detail)
+    res = JSONResponse(status_code=exc.status_code, content=error_dict)
+    return res
+
+
+app.middleware('http')(catch_exceptions_middleware)
 
 
 def run():

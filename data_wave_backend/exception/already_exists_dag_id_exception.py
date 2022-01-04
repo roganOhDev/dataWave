@@ -9,7 +9,7 @@ class AlreadyExistsDagIdException(ApiException):
         self.status_code: int = 500
         self.code: str = ExceptionCode.Dag.ALREADY_EXITS_DAG_ID
         self.message: str = "Already Exist dag id"
-        self.detail: str = json.dumps({"ApiException": {"code": self.code, "detail": self.message}})
+        self.detail: str = json.dumps( {"code": self.code, "detail": self.message})
         super().log()
 
     def __repr__(self) -> str:

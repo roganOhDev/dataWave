@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from domain.table.table_list import Table_List
-from domain.utils.logger import logger
+from common.utils.logger import logger
 from exception.api_exception import ApiException
 
 
