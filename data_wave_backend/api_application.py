@@ -1,3 +1,4 @@
+import socket
 import traceback
 
 import uvicorn
@@ -59,8 +60,14 @@ app.middleware('http')(catch_exceptions_middleware)
 
 def run():
     LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s [%(name)s] %(levelprefix)s %(message)s"
-    # TODO: reload 떼기
-    uvicorn.run("api_application:app", host="0.0.0.0", port=8000, reload=True, use_colors=True)
+    uvicorn.run("api_application:app", host=get_ip(), port=8000, reload=True,
+                reload_dirs=["./data_wave_backend"], use_colors=True)
+
+
+def get_ip() -> str:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    return s.getsockname()[0]
 
 
 if __name__ == "__main__":
