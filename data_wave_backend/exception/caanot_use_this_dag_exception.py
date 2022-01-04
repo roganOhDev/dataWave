@@ -3,7 +3,6 @@ import json
 from exception.api_exception import ApiException
 from exception.exception_code import ExceptionCode
 
-#TODO : classify status code
 class CannotUseThisDagException(ApiException):
 
     def __init__(self):

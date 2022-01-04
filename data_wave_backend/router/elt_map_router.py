@@ -38,5 +38,3 @@ def update(uuid: str, request: EltMapSaveDto, session: Session = Depends(db.sess
 @router.delete("")
 def delete(uuids: List[str] = Query(None), session: Session = Depends(db.session)):
     composite_service.delete(uuids, session)
-
-# TODO : active 할땐 dag 파일 만들고, deactive 할 땐 dag 파일 지우기 (파일 생성 코드 이후)
