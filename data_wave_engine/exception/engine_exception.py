@@ -1,5 +1,7 @@
 from fastapi import HTTPException
 
+from common.utils.logger import logger
+
 
 class EngineException(HTTPException):
     def __init__(self, message: str = None):
@@ -11,5 +13,5 @@ class EngineException(HTTPException):
     def __repr__(self) -> str:
         return ""
 
-    # def log(self):
-    #     logger.error(self.message)
+    def log(self):
+        logger.error(self.message)

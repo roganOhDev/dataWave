@@ -27,7 +27,7 @@ from croniter import croniter
 from common.utils.json_util import loads
 from common.utils.list_converter import convert_str_list_to_string
 from domain.enums.elt_map import Rule_Set
-from domain.services import table
+from domain.call_api import table_api
 from exception.engine_exception import EngineException
 from hook.extract.get_data_by_cron_expression import Get_Data_By_Cron_Expression
 from hook.extract.get_data_by_max_pk import Get_Data_By_Max_Pk

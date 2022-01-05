@@ -16,7 +16,7 @@ def save(request: job_info_dto.JobCreateDto, session: Session):
 
 
 def update(uuid: str, request: job_info_dto.JobUpdateDto, session: Session):
-    job = service.find(uuid, session, True)
+    job = service.find_by_uuid(uuid, session, True)
     validate_job_id(request.job_id, job.id, False, session)
 
     job.job_id = job.job_id if not request.job_id else request.job_id
@@ -30,14 +30,19 @@ def update(uuid: str, request: job_info_dto.JobUpdateDto, session: Session):
     service.save(job, session)
 
 
-def find(uuid: str, session: Session) -> job_info_dto.JobInfoDto:
-    dag = service.find(uuid, session, True)
-    return job_info_dto.of(dag)
+def find_by_uuid(uuid: str, session: Session) -> job_info_dto.JobInfoDto:
+    job = service.find_by_uuid(uuid, session, True)
+    return job_info_dto.of(job)
+
+
+def find_all_by_using(session: Session) -> List[str]:
+    jobs = service.find_all_by_using(session)
+    return list(map(lambda job: job.job_id, jobs))
 
 
 def delete(uuids: List[str], session: Session):
     for uuid in uuids:
-        dag = service.find(uuid, session, True)
+        dag = service.find_by_uuid(uuid, session, True)
         service.delete(dag, session)
 
 
@@ -55,7 +60,7 @@ def job_info(request: job_info_dto.JobCreateDto, session: Session):
 
 def validate_job_id(job_id: str, id: int, new: bool, session: Session):
     if job_id:
-        jobs = service.find_all(job_id, session)
+        jobs = find_all_by_job_id(job_id, session)
         if new:
             if jobs:
                 raise AlreadyExistsJobIdException()
@@ -63,9 +68,13 @@ def validate_job_id(job_id: str, id: int, new: bool, session: Session):
             raise AlreadyExistsJobIdException()
 
 
+def find_all_by_job_id(job_id: str, session: Session) -> List[JobInfo]:
+    return service.find_all_by_job_id(job_id, session)
+
+
 def update_job_usage(elt_map: EltMapSaveDto, session):
     if elt_map.job_uuid:
-        job = service.find(elt_map.job_uuid, session, True)
+        job = service.find_by_uuid(elt_map.job_uuid, session, True)
         job.using = not job.using
         job.updated_at = datetime.now()
         service.save(job, session)

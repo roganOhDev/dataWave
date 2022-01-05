@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from common.database import db
@@ -22,7 +22,17 @@ def update(uuid: str, request: JobUpdateDto, session: Session = Depends(db.sessi
 
 @router.get("")
 def find(uuid: str, session: Session = Depends(db.session)):
-    return composite_service.find(uuid, session)
+    return composite_service.find_by_uuid(uuid, session)
+
+
+@router.get("/using")
+def find_using(session: Session = Depends(db.session)):
+    return composite_service.find_all_by_using(session)
+
+
+@router.get("/{job_id}")
+def find_by_job_id(job_id: str, session: Session = Depends(db.session)):
+    return composite_service.find_all_by_job_id(job_id, session)
 
 
 @router.delete("")
