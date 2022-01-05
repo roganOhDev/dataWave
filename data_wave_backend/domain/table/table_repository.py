@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from domain.dag.dag_infoes import DagInfo
+from domain.job.job_infoes import JobInfo
 
 
-def find(uuid: str, session: Session, validate: bool) -> DagInfo:
-    return session.query(DagInfo).filter(DagInfo.uuid == uuid).first()
+def find(uuid: str, session: Session, validate: bool) -> JobInfo:
+    return session.query(JobInfo).filter(JobInfo.uuid == uuid).first()

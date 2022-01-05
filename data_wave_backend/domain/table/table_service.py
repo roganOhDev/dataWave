@@ -3,30 +3,30 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from domain.connection.connection import Connection
-from domain.dag.dag_infoes import DagInfo
+from domain.job.job_infoes import JobInfo
 from domain.table.table_list import Table_List
-from exception.dag_not_found_exception import DagNotFoundException
+from exception.job_not_found_exception import JobNotFoundException
 from domain.table import table_repository as repository
 
-def find_by_dag_id(dag_id: str, session: Session) -> DagInfo:
-    return session.query(DagInfo).filter(DagInfo.dag_id == dag_id).first()
+def find_by_job_id(job_id: str, session: Session) -> JobInfo:
+    return session.query(JobInfo).filter(JobInfo.job_id == job_id).first()
 
 
 def find(uuid: str, session: Session, validate: bool) -> Connection:
-    dag = repository.find(uuid, session)
-    if validate & (not dag):
+    job = repository.find(uuid, session)
+    if validate & (not job):
         raise Connection
-    return dag
+    return job
 
-def find_all(dag_id: str, session: Session) -> List[DagInfo]:
-    dag = session.query(DagInfo).filter(DagInfo.dag_id == dag_id).all()
-    return dag
+def find_all(job_id: str, session: Session) -> List[JobInfo]:
+    job = session.query(JobInfo).filter(JobInfo.job_id == job_id).all()
+    return job
 
 def delete(uuid: str, session: Session):
-    dag = session.query(DagInfo).filter(DagInfo.uuid == uuid).first()
-    if not dag:
-        raise DagNotFoundException
-    session.delete(dag)
+    job = session.query(JobInfo).filter(JobInfo.uuid == uuid).first()
+    if not job:
+        raise JobNotFoundException
+    session.delete(job)
     session.commit()
 
 

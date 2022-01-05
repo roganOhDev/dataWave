@@ -2,10 +2,10 @@ class ExceptionCode:
     TYPE_EXCEPTION = "DWB-0001"
     EMPTY_VALUE_EXCEPTION = "DWB-0002"
 
-    class Dag:
-        ALREADY_EXITS_DAG_ID = "DWB-0100"
-        DAG_NOT_FOUND = "DWB-0101"
-        USING_DAG = "DWB-0102"
+    class Job:
+        ALREADY_EXITS_JOB_ID = "DWB-0100"
+        JOB_NOT_FOUND = "DWB-0101"
+        USING_JOB = "DWB-0102"
 
     class Connection:
         ALREADY_EXITS_CONNECTION_NAME = "DWB-0200"
@@ -21,6 +21,6 @@ class ExceptionCode:
 
     class Elt_Map:
         ELT_MAP_NOT_FOUND = "DWB-0500"
-        USING_DAG = "DWB-0501"
+        USING_JOB = "DWB-0501"
         CONNECTIONS_ARE_NOT_EQUAL = "DWB-0502"
         NOT_EXIST_FILE = "DWB-0503"

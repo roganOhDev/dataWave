@@ -3,12 +3,12 @@ import json
 from exception.api_exception import ApiException
 from exception.exception_code import ExceptionCode
 
-class CannotUseThisDagException(ApiException):
 
+class JobNotFoundException(ApiException):
     def __init__(self):
         self.status_code: int = 500
-        self.code: str = ExceptionCode.Elt_Map.USING_DAG
-        self.message: str = "Using Dag Please Choose other dag"
+        self.code: str = ExceptionCode.EMPTY_VALUE_EXCEPTION
+        self.message: str = "job not found"
         self.detail: str = json.dumps({"code": self.code, "detail": self.message})
         super().log()
 

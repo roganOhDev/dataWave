@@ -1,4 +1,4 @@
-dag_format = """
+job_format = """
 # -*- coding:utf-8 -*-
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -13,8 +13,8 @@ default_args = {{
     'start_date': "{start_date}"
 }}
 
-dag = DAG(
-    dag_id= "{dag_id}",
+job = DAG(
+    job_id= "{dag_id}",
     default_args=default_args,
     catchup="{catchup}",
     schedule_interval="{schedule_interval}")
@@ -23,6 +23,6 @@ get_data = {extract_task}
 do_load = {load_task}
 get_data >> do_load
 if __name__ == '__main__':
-  dag.clear(reset_dag_runs=True)
-  dag.run()
+  job.clear(reset_job_runs=True)
+  job.run()
 """

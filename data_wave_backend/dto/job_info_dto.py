@@ -3,12 +3,12 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from domain.dag.dag_infoes import DagInfo
+from domain.job.job_infoes import JobInfo
 
 
-class DagCreateDto(BaseModel):
+class JobCreateDto(BaseModel):
     yesterday: datetime = datetime.today() - date.timedelta(1)
-    dag_id: str
+    job_id: str
     owner: str = ''
     start_date: str = '({year},{month},{day})'.format(year=yesterday.year, month=yesterday.month,
                                                       day=yesterday.day)
@@ -17,9 +17,9 @@ class DagCreateDto(BaseModel):
     csv_files_directory: str = ""
 
 
-class DagUpdateDto(BaseModel):
+class JobUpdateDto(BaseModel):
     yesterday: datetime = datetime.today() - date.timedelta(1)
-    dag_id: str = ''
+    job_id: str = ''
     owner: str = ''
     start_date: str = ''
     catchup: bool = None
@@ -27,10 +27,10 @@ class DagUpdateDto(BaseModel):
     csv_files_directory: str = ""
 
 
-class DagInfoDto(BaseModel):
+class JobInfoDto(BaseModel):
     id: int = None
     uuid: str = None
-    dag_id: str = None
+    job_id: str = None
     airflow_home: str = None
     owner: str = None
     catchup: bool = None
@@ -43,19 +43,19 @@ class DagInfoDto(BaseModel):
     updated_at: datetime = None
 
 
-def of(dag_info: DagInfo) -> DagInfoDto:
-    dag_info_dto = DagInfoDto()
-    dag_info_dto.id = dag_info.id
-    dag_info_dto.uuid = dag_info.uuid
-    dag_info_dto.dag_id = dag_info.dag_id
-    dag_info_dto.airflow_home = dag_info.airflow_home
-    dag_info_dto.owner = dag_info.owner
-    dag_info_dto.catchup = dag_info.catchup
-    dag_info_dto.schedule_interval = dag_info.schedule_interval
-    dag_info_dto.csv_files_directory = dag_info.csv_files_directory
-    dag_info_dto.yesterday = dag_info.yesterday.strftime("%Y-%m-%d")
-    dag_info_dto.start_date = dag_info.start_date
-    dag_info_dto.using = dag_info.using
-    dag_info_dto.created_at = dag_info.created_at
-    dag_info_dto.updated_at = dag_info.updated_at
-    return dag_info_dto
+def of(job_info: JobInfo) -> JobInfoDto:
+    job_info_dto = JobInfoDto()
+    job_info_dto.id = job_info.id
+    job_info_dto.uuid = job_info.uuid
+    job_info_dto.job_id = job_info.job_id
+    job_info_dto.airflow_home = job_info.airflow_home
+    job_info_dto.owner = job_info.owner
+    job_info_dto.catchup = job_info.catchup
+    job_info_dto.schedule_interval = job_info.schedule_interval
+    job_info_dto.csv_files_directory = job_info.csv_files_directory
+    job_info_dto.yesterday = job_info.yesterday.strftime("%Y-%m-%d")
+    job_info_dto.start_date = job_info.start_date
+    job_info_dto.using = job_info.using
+    job_info_dto.created_at = job_info.created_at
+    job_info_dto.updated_at = job_info.updated_at
+    return job_info_dto

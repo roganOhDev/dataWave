@@ -3,11 +3,11 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from dto.connection_dto import ConnectionDto
-from dto.dag_info_dto import DagInfoDto
+from dto.job_info_dto import JobInfoDto
 from dto.table_list_dto import Table_List_Dto
 
 
-def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists: List[Table_List_Dto],
+def make_mysql_raw_code(connection: ConnectionDto, job: JobInfoDto, table_lists: List[Table_List_Dto],
                         connection_type: str,
                         session: Session) -> str:
     task_id = 'do_extract' if connection_type == 'extract' else 'do_load'
@@ -23,10 +23,10 @@ def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists:
             'database': "{database}",
             'csv_files_directory': "{csv_files_directory}",
             'option': '{option}',
-            'dag_id': "{dag_id}",
+            'job_id': "{job_id}",
             'cron_expression': "{cron_expression}",
             'table_list_uuids': "{table_list_uuids}"}},
-         dag=dag
+         job=job
      )'''.format(task_id=task_id,
                  func_name=func_name,
                  db_type=connection.db_type,
@@ -35,16 +35,16 @@ def make_mysql_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists:
                  host=connection.host,
                  port=connection.port,
                  database=connection.database,
-                 csv_files_directory=dag.csv_files_directory,
+                 csv_files_directory=job.csv_files_directory,
                  option=connection.option,
                  table_list_uuids=table_list_uuids,
-                 cron_expression=dag.schedule_interval,
-                 dag_id=dag.dag_id,
+                 cron_expression=job.schedule_interval,
+                 job_id=job.job_id,
                  )
     return get_data
 
 
-def make_snowflake_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists: [Table_List_Dto],
+def make_snowflake_raw_code(connection: ConnectionDto, job: JobInfoDto, table_lists: [Table_List_Dto],
                             connection_type: str,
                             session: Session) -> str:
     if connection_type == "ex":
@@ -73,9 +73,9 @@ def make_snowflake_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_li
                     'columns': {columns},
                     'pk': {pk},
                     'upsert' : {upsert},
-                    'dag_id' : {dag_id},
+                    'job_id' : {dag_id},
                     'updated' : {updated}}},
-                dag=dag
+                job=job
             )'''.format(task_id=task_id,
                         func_name=func_name,
                         db_type=connection_type + "['db_type'][0]",
@@ -90,13 +90,13 @@ def make_snowflake_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_li
                         columns="tr['columns'][0]",
                         pk="tr['pk'][0]",
                         upsert="tr['upsert'][0]",
-                        dag_id="tr['dag_id'][0]",
+                        job_id="tr['dag_id'][0]",
                         updated="tr['updated'][0]"
                         )
     return get_data
 
 
-def make_amazon_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists: [Table_List_Dto],
+def make_amazon_raw_code(connection: ConnectionDto, job: JobInfoDto, table_lists: [Table_List_Dto],
                          connection_type: str,
                          session: Session) -> str:
     if connection_type == 'ex':
@@ -124,9 +124,9 @@ def make_amazon_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists
                     'columns': {columns},
                     'pk': {pk},
                     'upsert' : {upsert},
-                    'dag_id' : {dag_id},
+                    'job_id' : {dag_id},
                     'updated' : {updated}}},
-                 dag=dag
+                 job=job
              )'''.format(task_id=task_id,
                          func_name=func_name,
                          db_type=connection_type + "['db_type'][0]",
@@ -141,7 +141,7 @@ def make_amazon_raw_code(connection: ConnectionDto, dag: DagInfoDto, table_lists
                          columns="tr['columns'][0]",
                          pk="tr['pk'][0]",
                          upsert="tr['upsert'][0]",
-                         dag_id="tr['dag_id'][0]",
+                         job_id="tr['dag_id'][0]",
                          updated="tr['updated'][0]"
                          )
 

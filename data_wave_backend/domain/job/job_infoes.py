@@ -6,12 +6,12 @@ from common.database import Base
 from common.utils import uuid_util
 
 
-class DagInfo(Base):
-    __tablename__ = "dag_infoes"
+class JobInfo(Base):
+    __tablename__ = "job_infoes"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     uuid = Column(String, unique=True)
-    dag_id = Column(String, nullable=False)
+    job_id = Column(String, nullable=False)
     airflow_home = Column(String, nullable=False)
     owner = Column(String, default="Rogan")
     catchup = Column(Boolean, default=False)

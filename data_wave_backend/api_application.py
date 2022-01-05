@@ -13,7 +13,7 @@ from common.utils.logger import logger
 from exception.api_exception import ApiException
 from middle.controller import dispatch
 from router import connection_router
-from router import dag_router
+from router import job_router
 from router import elt_map_router
 from router import table_router
 
@@ -29,7 +29,7 @@ def create_app():
 
 def add_router(app_birth):
     app_birth.include_router(connection_router.router, prefix="/connection")
-    app_birth.include_router(dag_router.router, prefix="/dag")
+    app_birth.include_router(job_router.router, prefix="/job")
     app_birth.include_router(table_router.router, prefix="/table_list")
     app_birth.include_router(elt_map_router.router, prefix="/elt_map")
     return app_birth

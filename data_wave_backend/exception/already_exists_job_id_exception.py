@@ -4,12 +4,12 @@ from exception.api_exception import ApiException
 from exception.exception_code import ExceptionCode
 
 
-class UsingDagException(ApiException):
+class AlreadyExistsJobIdException(ApiException):
     def __init__(self):
         self.status_code: int = 500
-        self.code: str = ExceptionCode.Dag.USING_DAG
-        self.message: str = "Using Dag. Please Delete Dag Usage In elt_map"
-        self.detail: str = json.dumps({"code": self.code, "detail": self.message})
+        self.code: str = ExceptionCode.Job.ALREADY_EXITS_JOB_ID
+        self.message: str = "Already Exist job id"
+        self.detail: str = json.dumps( {"code": self.code, "detail": self.message})
         super().log()
 
     def __repr__(self) -> str:

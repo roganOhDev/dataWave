@@ -3,22 +3,23 @@ from datetime import datetime
 
 from domain.connection import connection_composite_service
 from domain.connection.db_type import Db_Type
-from domain.dag import dag_composite_service
+from domain.job import job_composite_service
 from domain.elt_map import elt_map_service as service
-from domain.elt_map.create_dag.dag_format import dag_format
-from domain.elt_map.create_dag.db_vendor_raw_code import *
+from domain.elt_map.create_job.job_format import job_format
+from domain.elt_map.create_job.db_vendor_raw_code import *
 from domain.elt_map.elt_map import EltMap
 from domain.table import table_composite_service
 from common.utils.logger import logger
 from dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
-from exception.caanot_use_this_dag_exception import CannotUseThisDagException
+from exception.caanot_use_this_job_exception import CannotUseThisJobException
 from exception.connections_are_not_equal import ConnectionsAreNotEqual
+from common.utils.list_converter import *
 
 
 def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: EltMap) -> EltMap:
     table_list = table_composite_service.find(elt_map_info_dto.table_list_uuids[0], session)
 
-    elt_map.dag_uuid = elt_map_info_dto.dag_uuid
+    elt_map.job_uuid = elt_map_info_dto.job_uuid
     elt_map.integrate_connection_uuid = table_list.connection_uuid
     elt_map.destination_connection_uuid = elt_map_info_dto.destination_connection_uuid
     elt_map.table_list_uuids = convert_str_list_to_string(elt_map_info_dto.table_list_uuids)
@@ -35,17 +36,17 @@ def find(uuid: str, session: Session) -> EltMapDto:
 def create(request: EltMapSaveDto, session: Session):
     validate(request, session)
     elt_map = elt_map_info(request, session, EltMap())
-    if request.dag_uuid:
-        dag_composite_service.update_dag_usage(request, session)
+    if request.job_uuid:
+        job_composite_service.update_job_usage(request, session)
     service.save(elt_map, session)
 
 
 def update(uuid: str, request: EltMapSaveDto, session: Session):
     elt_map = service.find(uuid, session, True)
-    if elt_map.dag_uuid != request.dag_uuid:
+    if elt_map.job_uuid != request.job_uuid:
         validate(request, session)
-        dag_composite_service.update_dag_usage(elt_map, session)
-        dag_composite_service.update_dag_usage(request, session)
+        job_composite_service.update_job_usage(elt_map, session)
+        job_composite_service.update_job_usage(request, session)
     elt_map = elt_map_info(request, session, elt_map)
 
     service.save(elt_map, session)
@@ -72,10 +73,10 @@ def deactivate(uuid: str, session: Session):
 
 
 def validate(request: EltMapSaveDto, session: Session):
-    if request.dag_uuid:
-        dag = dag_composite_service.find(request.dag_uuid, session)
-        if dag.using:
-            raise CannotUseThisDagException()
+    if request.job_uuid:
+        job = job_composite_service.find(request.job_uuid, session)
+        if job.using:
+            raise CannotUseThisJobException()
 
     connection_uuids = []
     for table_list_uuid in request.table_list_uuids:
@@ -87,27 +88,27 @@ def validate(request: EltMapSaveDto, session: Session):
 
 
 def create_file(elt_map: EltMap, session: Session):
-    dag = dag_composite_service.find(elt_map.dag_uuid, session)
+    job = job_composite_service.find(elt_map.job_uuid, session)
 
     extract_data_raw_code = get_extract_data_wave_raw_code(elt_map, session)
     load_data_raw_code = get_load_data_wave_raw_code(elt_map, session)
 
-    dag_code = dag_format.format(dag_id=dag.dag_id,
+    job_code = job_format.format(job_id=job.job_id,
                                  extract_task=extract_data_raw_code,
                                  load_task=load_data_raw_code,
-                                 catchup=dag.catchup,
-                                 schedule_interval=dag.schedule_interval,
-                                 owner=dag.owner,
-                                 start_date=dag.start_date,
+                                 catchup=job.catchup,
+                                 schedule_interval=job.schedule_interval,
+                                 owner=job.owner,
+                                 start_date=job.start_date,
                                  )
 
-    with open(dag.airflow_home + "/dags/" + dag.dag_id + ".py", 'w', encoding="utf-8") as file:
-        file.write('{}'.format(dag_code))
+    with open(job.airflow_home + "/jobs/" + job.job_id + ".py", 'w', encoding="utf-8") as file:
+        file.write('{}'.format(job_code))
 
 
 def delete_file(elt_map: EltMap, session: Session):
-    dag = dag_composite_service.find(elt_map.dag_uuid, session)
-    file = dag.airflow_home + "/dags/" + dag.dag_id + ".py"
+    job = job_composite_service.find(elt_map.job_uuid, session)
+    file = job.airflow_home + "/dags/" + job.job_id + ".py"
     if os.path.isfile(file):
         os.remove(file)
     else:
@@ -126,7 +127,7 @@ def make_data_wave_raw_code(elt_map: EltMap, connection_type, session: Session) 
     connection = \
         connection_composite_service.find(elt_map.integrate_connection_uuid, session) if connection_type == 'extract' \
             else connection_composite_service.find(elt_map.destination_connection_uuid, session)
-    dag = dag_composite_service.find(elt_map.dag_uuid, session)
+    job = job_composite_service.find(elt_map.job_uuid, session)
     table_lists = []
     table_list_uuids = elt_map.table_list_uuids.split(', ')
 
@@ -136,12 +137,12 @@ def make_data_wave_raw_code(elt_map: EltMap, connection_type, session: Session) 
 
     get_data = ""
     if connection.db_type == Db_Type.SNOWFLAKE.name:
-        get_data = make_snowflake_raw_code(connection, dag, table_lists, connection_type, session)
+        get_data = make_snowflake_raw_code(connection, job, table_lists, connection_type, session)
 
     elif connection.db_type == Db_Type.MYSQL.name:
-        get_data = make_mysql_raw_code(connection, dag, table_lists, connection_type, session)
+        get_data = make_mysql_raw_code(connection, job, table_lists, connection_type, session)
 
     elif connection.db_type in (Db_Type.REDSHIFT.name, Db_Type.POSTGRESQL.name):
-        get_data = make_amazon_raw_code(connection, dag, table_lists, connection_type, session)
+        get_data = make_amazon_raw_code(connection, job, table_lists, connection_type, session)
 
     return get_data
