@@ -7,22 +7,6 @@ from data_wave_engine.enum.db_type import Db_Type
 from data_wave_engine.hook.extract import do_extract
 from data_wave_engine.hook.load import do_load
 
-default_args = {{
-    'owner': "{owner}",
-    'depends_on_past': False,
-    'start_date': "{start_date}"
-}}
-
-job = DAG(
-    job_id= "{dag_id}",
-    default_args=default_args,
-    catchup="{catchup}",
-    schedule_interval="{schedule_interval}")
-    
-get_data = {extract_task}
-do_load = {load_task}
-get_data >> do_load
-if __name__ == '__main__':
-  job.clear(reset_job_runs=True)
-  job.run()
+do_load.{extract_db_type}({extract_args})
+do_extract.{load_db_type}({load_args})
 """

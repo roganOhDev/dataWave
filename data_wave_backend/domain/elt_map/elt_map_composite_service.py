@@ -1,19 +1,19 @@
 import os
 from datetime import datetime
 
+from common.utils.list_converter import *
+from common.utils.logger import logger
 from domain.connection import connection_composite_service
 from domain.connection.db_type import Db_Type
-from domain.job import job_composite_service
 from domain.elt_map import elt_map_service as service
-from domain.elt_map.create_job.job_format import job_format
 from domain.elt_map.create_job.db_vendor_raw_code import *
+from domain.elt_map.create_job.job_format import job_format
 from domain.elt_map.elt_map import EltMap
+from domain.job import job_composite_service
 from domain.table import table_composite_service
-from common.utils.logger import logger
 from dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
 from exception.caanot_use_this_job_exception import CannotUseThisJobException
 from exception.connections_are_not_equal import ConnectionsAreNotEqual
-from common.utils.list_converter import *
 
 
 def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: EltMap) -> EltMap:
@@ -89,18 +89,17 @@ def validate(request: EltMapSaveDto, session: Session):
 
 def create_file(elt_map: EltMap, session: Session):
     job = job_composite_service.find(elt_map.job_uuid, session)
+    extract_connection = connection_composite_service.find(elt_map.integrate_connection_uuid, session)
+    load_connection = connection_composite_service.find(elt_map.destination_connection_uuid, session)
+    extract_args = get_extract_data_wave_raw_code(extract_connection, elt_map, session)
+    load_args = get_load_data_wave_raw_code(load_connection, elt_map, session)
 
-    extract_data_raw_code = get_extract_data_wave_raw_code(elt_map, session)
-    load_data_raw_code = get_load_data_wave_raw_code(elt_map, session)
-
-    job_code = job_format.format(job_id=job.job_id,
-                                 extract_task=extract_data_raw_code,
-                                 load_task=load_data_raw_code,
-                                 catchup=job.catchup,
-                                 schedule_interval=job.schedule_interval,
-                                 owner=job.owner,
-                                 start_date=job.start_date,
-                                 )
+    job_code = job_format.format(
+        extract_db_type=extract_connection.db_type.lower(),
+        load_db_type=load_connection.db_type.lower(),
+        extract_args=,
+        load_args=,
+    )
 
     with open(job.airflow_home + "/jobs/" + job.job_id + ".py", 'w', encoding="utf-8") as file:
         file.write('{}'.format(job_code))
@@ -115,18 +114,15 @@ def delete_file(elt_map: EltMap, session: Session):
         logger.warning(msg="File Doesn't Exist")
 
 
-def get_extract_data_wave_raw_code(elt_map: EltMap, session: Session) -> str:
-    return make_data_wave_raw_code(elt_map, 'extract', session)
+def get_extract_data_wave_raw_code(extract_connection: ConnectionDto, elt_map: EltMap, session: Session) -> str:
+    return make_data_wave_raw_code(extract_connection, elt_map, session)
 
 
-def get_load_data_wave_raw_code(elt_map: EltMap, session: Session) -> str:
-    return make_data_wave_raw_code(elt_map, 'load', session)
+def get_load_data_wave_raw_code(load_connection: ConnectionDto, elt_map: EltMap, session: Session) -> str:
+    return make_data_wave_raw_code(load_connection, elt_map, session)
 
 
-def make_data_wave_raw_code(elt_map: EltMap, connection_type, session: Session) -> str:
-    connection = \
-        connection_composite_service.find(elt_map.integrate_connection_uuid, session) if connection_type == 'extract' \
-            else connection_composite_service.find(elt_map.destination_connection_uuid, session)
+def make_data_wave_raw_code(connection: ConnectionDto, elt_map: EltMap, session: Session) -> str:
     job = job_composite_service.find(elt_map.job_uuid, session)
     table_lists = []
     table_list_uuids = elt_map.table_list_uuids.split(', ')
@@ -137,12 +133,12 @@ def make_data_wave_raw_code(elt_map: EltMap, connection_type, session: Session) 
 
     get_data = ""
     if connection.db_type == Db_Type.SNOWFLAKE.name:
-        get_data = make_snowflake_raw_code(connection, job, table_lists, connection_type, session)
+        get_data = make_snowflake_raw_code(connection, job, table_lists, session)
 
     elif connection.db_type == Db_Type.MYSQL.name:
-        get_data = make_mysql_raw_code(connection, job, table_lists, connection_type, session)
+        get_data = make_mysql_raw_code(connection, job, table_lists, session)
 
     elif connection.db_type in (Db_Type.REDSHIFT.name, Db_Type.POSTGRESQL.name):
-        get_data = make_amazon_raw_code(connection, job, table_lists, connection_type, session)
+        get_data = make_amazon_raw_code(connection, job, table_lists, session)
 
     return get_data

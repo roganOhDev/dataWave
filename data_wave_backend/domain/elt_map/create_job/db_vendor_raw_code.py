@@ -8,25 +8,10 @@ from dto.table_list_dto import Table_List_Dto
 
 
 def make_mysql_raw_code(connection: ConnectionDto, job: JobInfoDto, table_lists: List[Table_List_Dto],
-                        connection_type: str,
                         session: Session) -> str:
-    task_id = 'do_extract' if connection_type == 'extract' else 'do_load'
-    func_name = 'do_extract' if connection_type == 'extract' else 'do_load'
     table_list_uuids = map(lambda table_list: table_list.uuid, table_lists)
-    get_data = '''PythonOperator(
-     task_id='{task_id}',
-     python_callable=getattr({func_name}, Db_Type.{db_type}.name.lower()),
-     op_kwargs = {{'user': "{user}",
-            'pwd': "{pwd}",
-            'host': "{host}",
-            'port': "{port}",
-            'database': "{database}",
-            'csv_files_directory': "{csv_files_directory}",
-            'option': '{option}',
-            'job_id': "{job_id}",
-            'cron_expression': "{cron_expression}",
-            'table_list_uuids': "{table_list_uuids}"}},
-         job=job
+    get_data = '''
+    {job_
      )'''.format(task_id=task_id,
                  func_name=func_name,
                  db_type=connection.db_type,
@@ -45,8 +30,8 @@ def make_mysql_raw_code(connection: ConnectionDto, job: JobInfoDto, table_lists:
 
 
 def make_snowflake_raw_code(connection: ConnectionDto, job: JobInfoDto, table_lists: [Table_List_Dto],
-                            connection_type: str,
                             session: Session) -> str:
+    connection_type = "ex"
     if connection_type == "ex":
         task_id = 'get_data'
         func_name = 'do_extract'
@@ -97,8 +82,9 @@ def make_snowflake_raw_code(connection: ConnectionDto, job: JobInfoDto, table_li
 
 
 def make_amazon_raw_code(connection: ConnectionDto, job: JobInfoDto, table_lists: [Table_List_Dto],
-                         connection_type: str,
                          session: Session) -> str:
+
+    connection_type = 'ex'
     if connection_type == 'ex':
         task_id = 'get_data'
         func_name = 'do_extract'
