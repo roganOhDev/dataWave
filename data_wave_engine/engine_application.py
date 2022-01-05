@@ -1,4 +1,3 @@
-import os
 import socket
 import traceback
 
@@ -13,7 +12,7 @@ from common.utils.logger import logger
 from domain.call_api import job_api
 from exception.engine_exception import EngineException
 from middle.controller import dispatch
-from scheduler import sched
+
 
 def create_app():
     app_birth = FastAPI()
@@ -65,13 +64,14 @@ def get_ip() -> str:
 def startup():
     fill_scheduler()
 
+
 def fill_scheduler():
     job_ids = job_api.get_activate_job_uuids()
 
     for job_id in job_ids:
         job = job_api.get_job_by_uuid(job_id)
-        import_str = "from {0} import {1}".format("elt_jobs."+job_id, "add_job")
-        exec(import_str,globals())
+        import_str = "from {0} import {1}".format("elt_jobs." + job_id, "add_job")
+        exec(import_str, globals())
         add_job()
 
         # schedules = []

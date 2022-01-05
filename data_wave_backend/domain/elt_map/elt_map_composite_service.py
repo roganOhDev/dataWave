@@ -91,8 +91,8 @@ def create_file(elt_map: EltMap, session: Session):
     job = job_composite_service.find_by_uuid(elt_map.job_uuid, session)
     extract_connection = connection_composite_service.find(elt_map.integrate_connection_uuid, session)
     load_connection = connection_composite_service.find(elt_map.destination_connection_uuid, session)
-    extract_args = make_data_wave_raw_code(job,extract_connection, elt_map, session)
-    load_args = make_data_wave_raw_code(job,load_connection, elt_map, session)
+    extract_args = make_data_wave_raw_code(job, extract_connection, elt_map, session)
+    load_args = make_data_wave_raw_code(job, load_connection, elt_map, session)
     cron_translate = translate_cron(job.schedule_interval)
 
     job_code = job_format.format(
@@ -100,7 +100,7 @@ def create_file(elt_map: EltMap, session: Session):
         load_db_type=load_connection.db_type.lower(),
         extract_args=extract_args,
         load_args=load_args,
-        cron = cron_translate
+        cron=cron_translate
     )
     with open("data_wave_engine/elt_jobs/" + job.job_id + ".py", 'w', encoding="utf-8") as file:
         file.write('{}'.format(job_code))
@@ -134,6 +134,7 @@ def make_data_wave_raw_code(job: JobInfoDto, connection: ConnectionDto, elt_map:
         get_data = make_amazon_raw_code(connection, job, table_lists, session)
 
     return get_data
+
 
 def translate_cron(cron_expression: str) -> str:
     return "translated cron with params"
