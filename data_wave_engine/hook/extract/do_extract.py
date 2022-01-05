@@ -2,7 +2,7 @@
 
 """Library for extract data from integration db.
 
-This library is made to run a DAG that user made in make_a_dag.py
+This library is made to run a DAG that user made in make_a_job.py
 This library and do_load.py are core of querypie_el
 
 Available functions:
@@ -36,10 +36,10 @@ from hook.extract.get_full_table import Get_Full_table
 from hook.get_information_from_user.structs import User_All_Data
 
 
-def snowflake(dag_id, user, pwd, account, database, schema, warehouse, tables, directory, columns, pk, upsert, updated,
+def snowflake(job_id, user, pwd, account, database, schema, warehouse, tables, directory, columns, pk, upsert, updated,
               role=''):
     """
-    :param dag_id: name of user's dag
+    :param job_id: name of user's dag
     :param user: login_id
     :param pwd: login_password
     :param account: host without .snowflakecomputing.com
@@ -60,10 +60,10 @@ def snowflake(dag_id, user, pwd, account, database, schema, warehouse, tables, d
     :return: csv file that user want to execute from db.
     """
 
-    metadatas = User_All_Data(dag_id, user, pwd, columns, pk, updated, upsert, tables, database, directory,
+    metadatas = User_All_Data(job_id, user, pwd, columns, pk, updated, upsert, tables, database, directory,
                               warehouse, role=role, schema=schema, acount=account)
 
-    ds, db_information = get_db_info(dag_id, backend_engine)
+    ds, db_information = get_db_info(job_id, backend_engine)
 
     if role == '':
         url_role = role
@@ -88,9 +88,9 @@ def snowflake(dag_id, user, pwd, account, database, schema, warehouse, tables, d
             get_data_by_max_val_mysql(engine, i, ds, db_information, metadatas)
 
 
-def postgresql(dag_id, user, pwd, host, port, database, schema, tables, directory, pk, upsert, updated, columns):
+def postgresql(job_id, user, pwd, host, port, database, schema, tables, directory, pk, upsert, updated, columns):
     """
-    :param dag_id: id for dag which made in make_a_dag.py
+    :param job_id: id for dag which made in make_a_dag.py
     :param user: login id
     :param pwd: login password
     :param host: db's host
@@ -107,10 +107,10 @@ def postgresql(dag_id, user, pwd, host, port, database, schema, tables, director
     :param columns: user's columns
     :return: csv file of data
     """
-    metadatas = User_All_Data(dag_id, user, pwd, columns, pk, updated, upsert, tables, database, directory,
+    metadatas = User_All_Data(job_id, user, pwd, columns, pk, updated, upsert, tables, database, directory,
                               schema=schema,
                               host=host, port=port)
-    ds, db_information = get_db_info(dag_id, backend_engine)
+    ds, db_information = get_db_info(job_id, backend_engine)
 
     url = 'postgresql://{u}:{p}@{h}:{port}/{d}'.format(
         u=user,
@@ -128,9 +128,9 @@ def postgresql(dag_id, user, pwd, host, port, database, schema, tables, director
             get_data_by_max_val_mysql(engine, i, ds, db_information, metadatas)
 
 
-def redshift(dag_id, user, pwd, host, port, database, schema, tables, directory, pk, upsert, updated, columns):
+def redshift(job_id, user, pwd, host, port, database, schema, tables, directory, pk, upsert, updated, columns):
     """
-    :param dag_id: id for dag which made by make_a_dag.py
+    :param job_id: id for job which made by make_a_dag.py
     :param user: login id
     :param pwd: login password
     :param host: db's host
@@ -149,10 +149,10 @@ def redshift(dag_id, user, pwd, host, port, database, schema, tables, directory,
     :rypte: list
     :return: csv files for data
     """
-    metadatas = User_All_Data(dag_id, user, pwd, columns, pk, updated, upsert, tables, database, directory,
+    metadatas = User_All_Data(job_id, user, pwd, columns, pk, updated, upsert, tables, database, directory,
                               schema=schema,
                               host=host, port=port)
-    ds, db_information = get_db_info(dag_id, backend_engine)
+    ds, db_information = get_db_info(job_id, backend_engine)
 
     url = 'redshift+psycopg2://{u}:{p}@{h}:{port}/{d}'.format(
         u=user,
@@ -170,7 +170,7 @@ def redshift(dag_id, user, pwd, host, port, database, schema, tables, directory,
             get_data_by_max_val_mysql(engine, i, ds, db_information, metadatas)
 
 
-def mysql(dag_id: str, user: str, pwd: str, host: str, port: str, database: str, tables: List[str],
+def mysql(job_id: str, user: str, pwd: str, host: str, port: str, database: str, tables: List[str],
           csv_files_directory: str, cron_expression: str, table_list_uuids: List[str], option: str):
     tables, columns, pks, rule_sets, tables_pk_max, updated_columns = map_table_info(table_list_uuids)
 
@@ -183,18 +183,18 @@ def mysql(dag_id: str, user: str, pwd: str, host: str, port: str, database: str,
         if rule_set == Rule_Set.TRUNCATE.value or (rule_set == Rule_Set.MERGE.value and cron_expression == "@once"):
 
             sql_data = (table, column_list_str)
-            extract(Get_Full_table.MYSQL, sql_data, connection, csv_files_directory, dag_id, table)
+            extract(Get_Full_table.MYSQL, sql_data, connection, csv_files_directory, job_id, table)
 
         elif rule_set == Rule_Set.MERGE.value:
 
             before_time = get_before_update_time(cron_expression)
             sql_data = (table, column_list_str, updated_column, str(before_time))
-            extract(Get_Data_By_Cron_Expression.MYSQL, sql_data, connection, csv_files_directory, dag_id, table)
+            extract(Get_Data_By_Cron_Expression.MYSQL, sql_data, connection, csv_files_directory, job_id, table)
 
         elif rule_set == Rule_Set.INCREASEMENT.value:
 
             sql_data = (table, column_list_str, pk, table_pk_max)
-            extract(Get_Data_By_Max_Pk.MYSQL, sql_data, connection, csv_files_directory, dag_id, table)
+            extract(Get_Data_By_Max_Pk.MYSQL, sql_data, connection, csv_files_directory, job_id, table)
 
 
 def get_before_update_time(cron_expression: str) -> datetime:
@@ -203,7 +203,7 @@ def get_before_update_time(cron_expression: str) -> datetime:
     return cron.get_prev(datetime)
 
 
-def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directory: str, dag_id: str, table: str):
+def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directory: str, job_id: str, table: str):
     try:
         cursor = connection.cursor()
         cursor.execute(sql_select, sql_data)
@@ -213,7 +213,7 @@ def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directo
 
     data = pd.DataFrame(records)
 
-    data.to_csv(csv_files_directory + '/' + dag_id + '_' + table + '.csv', sep=',', quotechar="'", na_rep='NaN',
+    data.to_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', sep=',', quotechar="'", na_rep='NaN',
                 index=False)
 
 

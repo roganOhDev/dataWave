@@ -30,11 +30,6 @@ def check_csv_dir(airflow_home):
     return csv_files_dir
 
 
-def def_csv_dir(airflow_home):
-    csv_files_dir = check_csv_dir(airflow_home)
-    return os.path.abspath(csv_files_dir)
-
-
 def dir_exists(dir):
     return os.path.exists(dir)
 

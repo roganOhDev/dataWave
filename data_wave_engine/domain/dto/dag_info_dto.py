@@ -5,9 +5,9 @@ from pydantic import BaseModel
 
 
 
-class DagCreateDto(BaseModel):
+class JobCreateDto(BaseModel):
     yesterday: datetime = datetime.today() - date.timedelta(1)
-    dag_id: str
+    job_id: str
     owner: str = ''
     start_date: str = '({year},{month},{day})'.format(year=yesterday.year, month=yesterday.month,
                                                       day=yesterday.day)
@@ -16,9 +16,9 @@ class DagCreateDto(BaseModel):
     csv_files_directory: str = ""
 
 
-class DagUpdateDto(BaseModel):
+class JobUpdateDto(BaseModel):
     yesterday: datetime = datetime.today() - date.timedelta(1)
-    dag_id: str = ''
+    job_id: str = ''
     owner: str = ''
     start_date: str = ''
     catchup: bool = None
@@ -26,10 +26,10 @@ class DagUpdateDto(BaseModel):
     csv_files_directory: str = ""
 
 
-class DagInfoDto(BaseModel):
+class JobInfoDto(BaseModel):
     id: int = None
     uuid: str = None
-    dag_id: str = None
+    job_id: str = None
     airflow_home: str = None
     owner: str = None
     catchup: bool = None

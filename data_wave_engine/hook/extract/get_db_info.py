@@ -13,9 +13,9 @@ def make_db_info_into_json(db_raw):
     return db_information
 
 
-def get_db_info(dag_id,backend_engine):
+def get_db_info(job_id, backend_engine):
     ds = pd.read_sql_query(
-        "select * from metadata where dag_id='{dag_id}' and info_type='load'".format(dag_id=dag_id.lower()),
+        "select * from metadata where job_id='{job_id}' and info_type='load'".format(job_id=job_id.lower()),
         backend_engine)
     # if send dataframe to sql, data type become str and surround by '
     # I must magage with json but json is srrounded by " so I must do preprocess

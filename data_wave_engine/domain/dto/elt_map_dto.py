@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class EltMapSaveDto(BaseModel):
-    dag_uuid: str = None
+    job_uuid: str = None
     destination_connection_uuid: str = None
     table_list_uuids: List[str] = None
 
@@ -13,7 +13,7 @@ class EltMapSaveDto(BaseModel):
 class EltMapDto(BaseModel):
     id: int = None
     uuid: str = None
-    dag_uuid: str = None
+    job_uuid: str = None
     integrate_connection_uuid: str = None
     destination_connection_uuid: str = None
     table_list_uuids: str = None

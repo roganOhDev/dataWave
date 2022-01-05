@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 """Library for extract data from destination db.
-This library is made to run a DAG that user made in make_a_dag.py
+This library is made to run a DAG that user made in make_a_job.py
 Available functions:
 - snowflake: load data in snowflake
 - mysql: load data in mysql
@@ -12,7 +12,7 @@ import pandas as pd
 import sqlalchemy as sql
 
 
-def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, directory, pk, upsert, columns, updated, role=''):
+def snowflake(job_id, id, pwd, account, database, schema, warehouse, tables, directory, pk, upsert, columns, updated, role=''):
     """
     load data in snowflake
     :param id: login id
@@ -51,40 +51,40 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
     for i in range(len(tables)):
         filename = tables[i]
         try:
-            engine.execute('list @%{dag_id}_{filename}'.format(dag_id=dag_id,filename=filename))
+            engine.execute('list @%{job_id}_{filename}'.format(job_id=job_id, filename=filename))
         except:
             print("no exists")
         else:
-            engine.execute('remove @%{dag_id}_{filename}'.format(dag_id=dag_id,filename=filename))
+            engine.execute('remove @%{job_id}_{filename}'.format(job_id=job_id, filename=filename))
 
         if upsert[i] == 'truncate':
-            result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-            engine.execute('truncate table if exists {dag_id}_{filename}'.format(dag_id=dag_id,filename=filename))
-            result.head(0).to_sql(dag_id.lower()+'_'+filename.lower(), engine, if_exists='replace', index=False)
+            result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+            engine.execute('truncate table if exists {job_id}_{filename}'.format(job_id=job_id, filename=filename))
+            result.head(0).to_sql(job_id.lower() + '_' + filename.lower(), engine, if_exists='replace', index=False)
             engine.execute(
-                '''put file://{directory}/{dag_id}_{filename}.csv @%{dag_id_lower}_{filename_lower}'''.format(directory=directory,dag_id=dag_id,
-                                                                                   filename=filename,filename_lower=filename.lower(),
-                                                                                                              dag_id_lower=dag_id.lower()))
+                '''put file://{directory}/{job_id}_{filename}.csv @%{job_id_lower}_{filename_lower}'''.format(directory=directory, job_id=job_id,
+                                                                                                              filename=filename, filename_lower=filename.lower(),
+                                                                                                              job_id_lower=job_id.lower()))
             engine.execute(
-                '''copy into {dag_id}_{filename} from @%{dag_id}_{filename} file_format=(type="csv" FIELD_OPTIONALLY_ENCLOSED_BY ="'" SKIP_HEADER=1  );'''.format(
-                    filename=filename.lower(),dag_id=dag_id.lower()))
+                '''copy into {job_id}_{filename} from @%{job_id}_{filename} file_format=(type="csv" FIELD_OPTIONALLY_ENCLOSED_BY ="'" SKIP_HEADER=1  );'''.format(
+                    filename=filename.lower(),job_id=job_id.lower()))
         elif upsert[i] == 'increasement':
-            result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
+            result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
             try:
                 engine.execute('select 1 from {filename} limit 1'.format(pk=pk[i], filename=filename.lower()))
             except:
-                result.head(0).to_sql(dag_id.lower() + '_' + filename.lower(), engine, if_exists='replace', index=False)
+                result.head(0).to_sql(job_id.lower() + '_' + filename.lower(), engine, if_exists='replace', index=False)
                 engine.execute(
-                    '''put file://{directory}/{dag_id}_{filename}.csv @%{dag_id_lower}_{filename_lower}'''.format(
-                        directory=directory, dag_id=dag_id,
+                    '''put file://{directory}/{job_id}_{filename}.csv @%{job_id_lower}_{filename_lower}'''.format(
+                        directory=directory, job_id=job_id,
                         filename=filename, filename_lower=filename.lower(),
-                        dag_id_lower=dag_id.lower()))
+                        job_id_lower=job_id.lower()))
                 engine.execute(
-                    '''copy into {dag_id}_{filename} from @%{dag_id}_{filename} file_format=(type="csv" FIELD_OPTIONALLY_ENCLOSED_BY ="'" SKIP_HEADER=1  );'''.format(
-                        filename=filename.lower(), dag_id=dag_id.lower()))
+                    '''copy into {job_id}_{filename} from @%{job_id}_{filename} file_format=(type="csv" FIELD_OPTIONALLY_ENCLOSED_BY ="'" SKIP_HEADER=1  );'''.format(
+                        filename=filename.lower(), job_id=job_id.lower()))
             else:
-                result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-                indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
+                result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+                indata = pd.read_sql_query('select * from ' + job_id + '_' + filename + ' limit 0', engine)
                 # 두 테이블의 칼럼을 하나의 리스트로 합침:
                 new_columns = indata.columns.values
                 before_columns = result.column_info.values
@@ -103,8 +103,8 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
                         print("Querypie ELT jumps this proccess this time")
                     else:
                         print("Querypie ELT continues this proccess")
-                        engine.execute('alter table {dag_id}_{filename} rename to {dag_id}_{filename}_tmp'.format(dag_id=dag_id.lower(),
-                                                                                                      filename=filename.lower()))
+                        engine.execute('alter table {job_id}_{filename} rename to {job_id}_{filename}_tmp'.format(job_id=job_id.lower(),
+                                                                                                                  filename=filename.lower()))
                         # 두 테이블의 칼럼을 하나의 리스트로 합친후 빈 테이블 db에 생성
                         origin_columns = before_columns
                         for v in new_columns:
@@ -112,34 +112,34 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
                                 before_columns.append(v)
                         result_columns = before_columns
                         df = pd.DataFrame([], columns=result_columns, index=[])
-                        df.to_sql(dag_id.lower() + '_' + filename.lower(), engine, if_exists='error', index=False, chunksize=15000)
+                        df.to_sql(job_id.lower() + '_' + filename.lower(), engine, if_exists='error', index=False, chunksize=15000)
                         column_list = ','.join(origin_columns)
-                        engine.execute('insert into {dag_id}_{filename}({columns}) select * from {dag_id}_{filename}_tmp'
-                                       .format(dag_id=dag_id.lower(),filename=filename.lower(),columns=column_list))
-                        result.to_sql(dag_id + '_' + filename, engine, if_exists='append',
+                        engine.execute('insert into {job_id}_{filename}({columns}) select * from {job_id}_{filename}_tmp'
+                                       .format(job_id=job_id.lower(), filename=filename.lower(), columns=column_list))
+                        result.to_sql(job_id + '_' + filename, engine, if_exists='append',
                                       index=False)
-                        engine.execute('drop table {dag_id}_{filename}_tmp'.format(dag_id=dag_id.lower(),
+                        engine.execute('drop table {job_id}_{filename}_tmp'.format(job_id=job_id.lower(),
                                                                                    filename=filename.lower()))
                 else:
-                    result.to_sql(dag_id.lower() + '_' + filename.lower(), engine, if_exists='append', index=False, chunksize=15000)
+                    result.to_sql(job_id.lower() + '_' + filename.lower(), engine, if_exists='append', index=False, chunksize=15000)
 
         elif upsert[i] == 'merge':
-            result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
+            result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
             try:
                 engine.execute('select 1 from {filename} limit 1'.format(pk=pk[i], filename=filename.lower()))
             except:
-                result.head(0).to_sql(dag_id.lower() + '_' + filename.lower(), engine, if_exists='replace', index=False)
+                result.head(0).to_sql(job_id.lower() + '_' + filename.lower(), engine, if_exists='replace', index=False)
                 engine.execute(
-                    '''put file://{directory}/{dag_id}_{filename}.csv @%{dag_id_lower}_{filename_lower}'''.format(
-                        directory=directory, dag_id=dag_id,
+                    '''put file://{directory}/{job_id}_{filename}.csv @%{job_id_lower}_{filename_lower}'''.format(
+                        directory=directory, job_id=job_id,
                         filename=filename, filename_lower=filename.lower(),
-                        dag_id_lower=dag_id.lower()))
+                        job_id_lower=job_id.lower()))
                 engine.execute(
-                    '''copy into {dag_id}_{filename} from @%{dag_id}_{filename} file_format=(type="csv" FIELD_OPTIONALLY_ENCLOSED_BY ="'" SKIP_HEADER=1  );'''.format(
-                        filename=filename.lower(), dag_id=dag_id.lower()))
+                    '''copy into {job_id}_{filename} from @%{job_id}_{filename} file_format=(type="csv" FIELD_OPTIONALLY_ENCLOSED_BY ="'" SKIP_HEADER=1  );'''.format(
+                        filename=filename.lower(), job_id=job_id.lower()))
             else:
-                result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-                indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
+                result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+                indata = pd.read_sql_query('select * from ' + job_id + '_' + filename + ' limit 0', engine)
                 # 두 테이블의 칼럼을 하나의 리스트로 합침:
                 new_columns = indata.columns.values
                 before_columns = result.column_info.values
@@ -158,8 +158,8 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
                         print("Querypie ELT jumps this proccess this time")
                     else:
                         print("Querypie ELT continues this proccess")
-                        engine.execute('alter table {dag_id}_{filename} rename to {dag_id}_{filename}_tmp'.format(
-                            dag_id=dag_id.lower(),
+                        engine.execute('alter table {job_id}_{filename} rename to {job_id}_{filename}_tmp'.format(
+                            job_id=job_id.lower(),
                             filename=filename.lower()))
                         # 두 테이블의 칼럼을 하나의 리스트로 합친후 빈 테이블 db에 생성
                         origin_columns = before_columns
@@ -168,12 +168,12 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
                                 before_columns.append(v)
                         result_columns = before_columns
                         df = pd.DataFrame([], columns=result_columns, index=[])
-                        df.to_sql(dag_id.lower() + '_' + filename.lower(), engine, if_exists='append', index=False)
+                        df.to_sql(job_id.lower() + '_' + filename.lower(), engine, if_exists='append', index=False)
                         column_list = ','.join(origin_columns)
                         engine.execute(
-                            'insert into {dag_id}_{filename}({columns}) select * from {dag_id}_{filename}_tmp'
-                            .format(dag_id=dag_id.lower(), filename=filename.lower(), columns=column_list))
-                        result.to_sql(dag_id + '_' + filename + '_tmp', engine, if_exists='replace',index=False)
+                            'insert into {job_id}_{filename}({columns}) select * from {job_id}_{filename}_tmp'
+                            .format(job_id=job_id.lower(), filename=filename.lower(), columns=column_list))
+                        result.to_sql(job_id + '_' + filename + '_tmp', engine, if_exists='replace', index=False)
                         #기존 테이블을 새 테이블에 새 칼럼과 함께 넣음
                         column_string_to_list = columns[i].split(',')
                         update = ''
@@ -185,8 +185,8 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
                             if column_name not in origin_columns:
                                 update_new = "{column_name}=''".format(column_name=column_name)
                             else:
-                                update_new = '{dag_id}_{table}.{column_name}={dag_id}_{table}_tmp.{column_name}'.format(
-                                column_name=column_name,table=filename.lower(), dag_id=dag_id.lower())
+                                update_new = '{job_id}_{table}.{column_name}={job_id}_{table}_tmp.{column_name}'.format(
+                                column_name=column_name,table=filename.lower(), job_id=job_id.lower())
 
                             update = update + update_new
                         for column_name in column_string_to_list:
@@ -194,8 +194,8 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
                                 insert = insert + ','
                             if column_name not in origin_columns:
                                 insert = "${column_name}".format(column_name=column_name)
-                            insert = insert + '{dag_id}_{table}_tmp.{column_name}'.format(table=filename.lower(),
-                                                                                          dag_id=dag_id.lower(),
+                            insert = insert + '{job_id}_{table}_tmp.{column_name}'.format(table=filename.lower(),
+                                                                                          job_id=job_id.lower(),
                                                                                           column_name=column_name)
                         other_columns = [x for x in result_columns if x not in new_columns]
                         len_other_columns = len(other_columns)
@@ -203,24 +203,24 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
                         other_columns_null = ['']*len_other_columns
                         other_columns_null = ','.join(other_columns_null)
                         query = '''set ({other_colmuns})=({other_columns_null});
-                        merge into {dag_id}_{table} using {dag_id}_{table}_tmp 
-                        on {dag_id}_{table}.{pk}={dag_id}_{table}_tmp.{pk} when matched then update set {update} 
+                        merge into {job_id}_{table} using {job_id}_{table}_tmp 
+                        on {job_id}_{table}.{pk}={job_id}_{table}_tmp.{pk} when matched then update set {update} 
                         when not matched then insert values ({insert})'''.format(
-                            update=update, pk=pk[i], table=filename.lower(), insert=insert, dag_id=dag_id.lower(),
+                            update=update, pk=pk[i], table=filename.lower(), insert=insert, job_id=job_id.lower(),
                             other_colmuns=other_columns, other_columns_null=other_columns_null)
 
-                        result.head(0).to_sql(dag_id.lower() + '_' + filename.lower() + '_tmp', engine,
+                        result.head(0).to_sql(job_id.lower() + '_' + filename.lower() + '_tmp', engine,
                                               if_exists='replace', index=False)
                         engine.execute(
-                            '''put file://{directory}/{dag_id}_{filename}.csv @%{dag_id_lower}_{filename_lower}_tmp'''.format(
-                                directory=directory, dag_id=dag_id,
+                            '''put file://{directory}/{job_id}_{filename}.csv @%{job_id_lower}_{filename_lower}_tmp'''.format(
+                                directory=directory, job_id=job_id,
                                 filename=filename, filename_lower=filename.lower(),
-                                dag_id_lower=dag_id.lower()))
+                                job_id_lower=job_id.lower()))
                         engine.execute(
-                            '''copy into {dag_id}_{filename} from @%{dag_id}_{filename}_tmp file_format=(type="csv" FIELD_OPTIONALLY_ENCLOSED_BY ="'" SKIP_HEADER=1  );'''.format(
-                                filename=filename.lower(), dag_id=dag_id.lower()))
+                            '''copy into {job_id}_{filename} from @%{job_id}_{filename}_tmp file_format=(type="csv" FIELD_OPTIONALLY_ENCLOSED_BY ="'" SKIP_HEADER=1  );'''.format(
+                                filename=filename.lower(), job_id=job_id.lower()))
                         engine.execute(query)
-                        engine.execute('drop table if exists {dag_id}_{filename}_tmp'.format(dag_id=dag_id.lower(),
+                        engine.execute('drop table if exists {job_id}_{filename}_tmp'.format(job_id=job_id.lower(),
                                                                                              filename=filename.lower()))
 
                 else:
@@ -230,28 +230,28 @@ def snowflake(dag_id, id, pwd, account, database, schema, warehouse, tables, dir
                     for column_name in column_string_to_list:
                         if (update):
                             update = update + ','
-                        update = update + '{dag_id}_{table}.{column_name}={dag_id}_{table}_tmp.{column_name}'.format(column_name=column_name,
-                                                                                            table=filename.lower(), dag_id=dag_id.lower())
+                        update = update + '{job_id}_{table}.{column_name}={job_id}_{table}_tmp.{column_name}'.format(column_name=column_name,
+                                                                                                                     table=filename.lower(), job_id=job_id.lower())
                     for column_name in column_string_to_list:
                         if (insert):
                             insert = insert + ','
-                        insert = insert + '{dag_id}_{table}_tmp.{column_name}'.format(table=filename.lower(), dag_id=dag_id.lower(), column_name=column_name)
-                    query = '''merge into {dag_id}_{table} using {dag_id}_{table}_tmp on {dag_id}_{table}.{pk}={dag_id}_{table}_tmp.{pk} when matched then update set {update} when not matched then insert values ({insert})'''.format(
-                        update=update, pk=pk[i], table=filename.lower(), insert=insert, dag_id=dag_id.lower())
+                        insert = insert + '{job_id}_{table}_tmp.{column_name}'.format(table=filename.lower(), job_id=job_id.lower(), column_name=column_name)
+                    query = '''merge into {job_id}_{table} using {job_id}_{table}_tmp on {job_id}_{table}.{pk}={job_id}_{table}_tmp.{pk} when matched then update set {update} when not matched then insert values ({insert})'''.format(
+                        update=update, pk=pk[i], table=filename.lower(), insert=insert, job_id=job_id.lower())
 
-                    result.head(0).to_sql(dag_id.lower() + '_' + filename.lower()+'_tmp' , engine, if_exists='replace', index=False)
+                    result.head(0).to_sql(job_id.lower() + '_' + filename.lower() + '_tmp', engine, if_exists='replace', index=False)
                     engine.execute(
-                        '''put file://{directory}/{dag_id}_{filename}.csv @%{dag_id_lower}_{filename_lower}_tmp'''.format(
-                            directory=directory, dag_id=dag_id,
+                        '''put file://{directory}/{job_id}_{filename}.csv @%{job_id_lower}_{filename_lower}_tmp'''.format(
+                            directory=directory, job_id=job_id,
                             filename=filename, filename_lower=filename.lower(),
-                            dag_id_lower=dag_id.lower()))
+                            job_id_lower=job_id.lower()))
                     engine.execute(
-                        '''copy into {dag_id}_{filename} from @%{dag_id}_{filename}_tmp file_format=(type="csv" FIELD_OPTIONALLY_ENCLOSED_BY ="'" SKIP_HEADER=1  );'''.format(
-                            filename=filename.lower(), dag_id=dag_id.lower()))
+                        '''copy into {job_id}_{filename} from @%{job_id}_{filename}_tmp file_format=(type="csv" FIELD_OPTIONALLY_ENCLOSED_BY ="'" SKIP_HEADER=1  );'''.format(
+                            filename=filename.lower(), job_id=job_id.lower()))
                     engine.execute(query)
-                    engine.execute('drop table if exists {dag_id}_{filename}_tmp'.format(dag_id=dag_id.lower(),filename=filename.lower()))
+                    engine.execute('drop table if exists {job_id}_{filename}_tmp'.format(job_id=job_id.lower(), filename=filename.lower()))
 
-def postgresql(dag_id, id, pwd, host, port, database,schema, tables, directory, pk, upsert, updated, columns):
+def postgresql(job_id, id, pwd, host, port, database,schema, tables, directory, pk, upsert, updated, columns):
     """
     load data in postgresql
     :param id: login id
@@ -282,11 +282,11 @@ def postgresql(dag_id, id, pwd, host, port, database,schema, tables, directory, 
         schema=schema[i]
         filename = tables[i]
         if upsert[i] == 'truncate':
-            result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
+            result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
             result.to_sql(filename,con= engine, schema=schema, if_exists='replace', index=False)
         elif upsert[i] == 'increasement':
-            result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-            indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
+            result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+            indata = pd.read_sql_query('select * from ' + job_id + '_' + filename + ' limit 0', engine)
             # 두 테이블의 칼럼을 하나의 리스트로 합침
             new_columns = indata.columns.values
             before_columns = result.column_info.values
@@ -306,7 +306,7 @@ def postgresql(dag_id, id, pwd, host, port, database,schema, tables, directory, 
                 else:
                     print("Querypie ELT continues this proccess")
                     engine.execute(
-                        'alter table {schema}.{dag_id}_{filename} rename to {dag_id}_{filename}_tmp'.format(dag_id=dag_id,
+                        'alter table {schema}.{job_id}_{filename} rename to {job_id}_{filename}_tmp'.format(job_id=job_id,
                                                                                                     filename=filename,
                                                                                                     schema=schema))
                     # 두 테이블의 칼럼을 하나의 리스트로 합친후 빈 테이블 db에 생성
@@ -316,29 +316,29 @@ def postgresql(dag_id, id, pwd, host, port, database,schema, tables, directory, 
                             before_columns.append(v)
                     result_columns = before_columns
                     df = pd.DataFrame([], columns=result_columns, index=[])
-                    df.to_sql(dag_id + '_' + filename, engine, if_exists='error', index=False)
+                    df.to_sql(job_id + '_' + filename, engine, if_exists='error', index=False)
 
                     column_list = ','.join(origin_columns)
                     engine.execute(
-                        'insert into {schema}.{dag_id}_{filename}({columns}) select * from {schema}.{dag_id}_{filename}_tmp'
-                            .format(dag_id=dag_id,filename=filename,columns=column_list, schema=schema))
-                    result.to_sql(dag_id + '_' + filename, engine, if_exists='append',
+                        'insert into {schema}.{job_id}_{filename}({columns}) select * from {schema}.{job_id}_{filename}_tmp'
+                            .format(job_id=job_id,filename=filename,columns=column_list, schema=schema))
+                    result.to_sql(job_id + '_' + filename, engine, if_exists='append',
                                   index=False)
                     engine.execute(
-                        'drop table if exists {schema}.{dag_id}_{table}_tmp'.format(schema=schema, dag_id=dag_id,
+                        'drop table if exists {schema}.{job_id}_{table}_tmp'.format(schema=schema, job_id=job_id,
                                                                                     table=filename))
             else:
-                result.to_sql(dag_id + '_' + filename, engine, if_exists='append',
+                result.to_sql(job_id + '_' + filename, engine, if_exists='append',
                               index=False)
         elif upsert[i] == 'merge':
             try:
-                engine.execute('select 1 from {schema}.{dag_id}_{table}'.format(schema=schema, dag_id=dag_id,filename=filename))
+                engine.execute('select 1 from {schema}.{job_id}_{table}'.format(schema=schema, job_id=job_id,filename=filename))
             except:
-                result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
+                result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
                 result.to_sql(filename, schema=schema, con=engine, if_exists='replace', index=False)
             else:
-                result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-                indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
+                result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+                indata = pd.read_sql_query('select * from ' + job_id + '_' + filename + ' limit 0', engine)
                 # 두 테이블의 칼럼을 하나의 리스트로 합침
                 # before_columns: 기존에 있었던 칼럼들
                 # new_columns: 새로 추가될 테이블의 칼럼
@@ -360,7 +360,7 @@ def postgresql(dag_id, id, pwd, host, port, database,schema, tables, directory, 
                     else:
                         print("Querypie ELT continues this proccess")
                         engine.execute(
-                            'rename table {dag_id}_{filename} to {dag_id}_{filename}_tmp'.format(dag_id=dag_id,
+                            'rename table {job_id}_{filename} to {job_id}_{filename}_tmp'.format(job_id=job_id,
                                                                                                  filename=filename))
                         # 두 테이블의 칼럼을 하나의 리스트로 합친후 빈 테이블 db에 생성
                         origin_columns = before_columns
@@ -369,13 +369,13 @@ def postgresql(dag_id, id, pwd, host, port, database,schema, tables, directory, 
                                 before_columns.append(c)
                         result_columns = before_columns
                         df = pd.DataFrame([], columns=result_columns, index=[])
-                        df.to_sql(dag_id + '_' + filename, engine, if_exists='error', index=False)
+                        df.to_sql(job_id + '_' + filename, engine, if_exists='error', index=False)
 
                         column_list = ','.join(origin_columns)
                         engine.execute(
-                            'insert into {schema}.{dag_id}_{filename}({columns}) select * from {schema}.{dag_id}_{filename}_tmp'
-                                .format(dag_id=dag_id, filename=filename, columns=column_list, schema=schema))
-                        result.to_sql(dag_id + '_' + filename + '_tmp', engine, if_exists='replace',
+                            'insert into {schema}.{job_id}_{filename}({columns}) select * from {schema}.{job_id}_{filename}_tmp'
+                                .format(job_id=job_id, filename=filename, columns=column_list, schema=schema))
+                        result.to_sql(job_id + '_' + filename + '_tmp', engine, if_exists='replace',
                                       index=False)
                         # truncate와 같이 null로 엎어치기한다음 옮길 데이터를 _tmp에 넣어놓음
                         column_string_to_list = columns[i].split(',')
@@ -390,24 +390,24 @@ def postgresql(dag_id, id, pwd, host, port, database,schema, tables, directory, 
                                 update_new = '{column_name}=tmp.{column_name}'.format(column_name=j)
                             update = update + update_new
                         engine.execute(
-                            'ALTER TABLE {schema}.{dag_id}_{table} ADD UNIQUE ({pk});'.format(dag_id=dag_id, pk=pk[i],
+                            'ALTER TABLE {schema}.{job_id}_{table} ADD UNIQUE ({pk});'.format(job_id=job_id, pk=pk[i],
                                                                                               schema=schema, table=filename))
                         new_columns_with_tmp=['tmp.'+x for x in new_columns]
                         new_columns_with_tmp=','.join(new_columns_with_tmp)
                         new_columns=','.join(new_columns)
 
-                        query1 = "UPDATE {schema}.{dag_id}_{filename} SET {update} " \
-                                 "FROM {schema}.{dag_id}_{filename}_tmp tmp WHERE {dag_id}_{table}.{pk} = tmp.{pk};" \
-                            .format(schema=schema, dag_id=dag_id, filename=filename, update=update, pk=pk[i])
-                        query2 = "INSERT INTO {schema}.{dag_id}_{filename}({columns}) SELECT {columns_with_tmp} " \
-                                 "FROM {schema}.{dag_id}_{filename}_tmp tmp " \
-                                 "WHERE tmp.{pk} NOT IN ( SELECT {pk} FROM {schema}.{dag_id}_{filename})"\
-                            .format(schema=schema, dag_id=dag_id, filename=filename, update=update, pk=pk[i],
+                        query1 = "UPDATE {schema}.{job_id}_{filename} SET {update} " \
+                                 "FROM {schema}.{job_id}_{filename}_tmp tmp WHERE {job_id}_{table}.{pk} = tmp.{pk};" \
+                            .format(schema=schema, job_id=job_id, filename=filename, update=update, pk=pk[i])
+                        query2 = "INSERT INTO {schema}.{job_id}_{filename}({columns}) SELECT {columns_with_tmp} " \
+                                 "FROM {schema}.{job_id}_{filename}_tmp tmp " \
+                                 "WHERE tmp.{pk} NOT IN ( SELECT {pk} FROM {schema}.{job_id}_{filename})"\
+                            .format(schema=schema, job_id=job_id, filename=filename, update=update, pk=pk[i],
                                     columns=new_columns, columns_with_tmp=new_columns_with_tmp)
                         engine.execute(query1)
                         engine.execute(query2)
                         engine.execute(
-                            'drop table if exists {schema}.{dag_id}_{filename}_tmp'.format(dag_id=dag_id, filename=filename,
+                            'drop table if exists {schema}.{job_id}_{filename}_tmp'.format(job_id=job_id, filename=filename,
                                                                                            schema=schema))
 
                 else:
@@ -423,29 +423,29 @@ def postgresql(dag_id, id, pwd, host, port, database,schema, tables, directory, 
                             update_new = '{column_name}=tmp.{column_name}'.format(column_name=j)
                         update = update + update_new
                     engine.execute(
-                        'ALTER TABLE {schema}.{dag_id}_{table} ADD UNIQUE ({pk});'.format(dag_id=dag_id, pk=pk[i],
+                        'ALTER TABLE {schema}.{job_id}_{table} ADD UNIQUE ({pk});'.format(job_id=job_id, pk=pk[i],
                                                                                           schema=schema,
                                                                                           table=filename))
                     new_columns_with_tmp = ['tmp.' + x for x in new_columns]
                     new_columns_with_tmp = ','.join(new_columns_with_tmp)
                     new_columns = ','.join(new_columns)
 
-                    query1 = "UPDATE {schema}.{dag_id}_{filename} SET {update} " \
-                             "FROM {schema}.{dag_id}_{filename}_tmp tmp WHERE {dag_id}_{table}.{pk} = tmp.{pk};" \
-                        .format(schema=schema, dag_id=dag_id, filename=filename, update=update, pk=pk[i])
-                    query2 = "INSERT INTO {schema}.{dag_id}_{filename}({columns}) SELECT {columns_with_tmp} " \
-                             "FROM {schema}.{dag_id}_{filename}_tmp tmp " \
-                             "WHERE tmp.{pk} NOT IN ( SELECT {pk} FROM {schema}.{dag_id}_{filename})" \
-                        .format(schema=schema, dag_id=dag_id, filename=filename, update=update, pk=pk[i],
+                    query1 = "UPDATE {schema}.{job_id}_{filename} SET {update} " \
+                             "FROM {schema}.{job_id}_{filename}_tmp tmp WHERE {job_id}_{table}.{pk} = tmp.{pk};" \
+                        .format(schema=schema, job_id=job_id, filename=filename, update=update, pk=pk[i])
+                    query2 = "INSERT INTO {schema}.{job_id}_{filename}({columns}) SELECT {columns_with_tmp} " \
+                             "FROM {schema}.{job_id}_{filename}_tmp tmp " \
+                             "WHERE tmp.{pk} NOT IN ( SELECT {pk} FROM {schema}.{job_id}_{filename})" \
+                        .format(schema=schema, job_id=job_id, filename=filename, update=update, pk=pk[i],
                                 columns=new_columns, columns_with_tmp=new_columns_with_tmp)
                     engine.execute(query1)
                     engine.execute(query2)
                     engine.execute(
-                        'drop table if exists {schema}.{dag_id}_{filename}_tmp'.format(dag_id=dag_id, filename=filename,
+                        'drop table if exists {schema}.{job_id}_{filename}_tmp'.format(job_id=job_id, filename=filename,
                                                                                        schema=schema))
 
 #사실 redshift 의 머지와 postgresql의 머지는 같은 구문임(표현만 다를뿐)
-def redshift(dag_id, id, pwd, host, port, database,schema, tables, directory, pk, upsert, updated, columns):
+def redshift(job_id, id, pwd, host, port, database,schema, tables, directory, pk, upsert, updated, columns):
     """
     load data in redshift
     :param id: login id
@@ -475,11 +475,11 @@ def redshift(dag_id, id, pwd, host, port, database,schema, tables, directory, pk
     for i in range(len(tables)):
         filename = tables[i]
         if upsert[i] == 'truncate':
-            result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-            result.to_sql(dag_id+'_'+filename,schema=schema, con=engine, if_exists='replace', index=False)
+            result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+            result.to_sql(job_id+'_'+filename,schema=schema, con=engine, if_exists='replace', index=False)
         elif upsert[i] == 'increasement':
-            result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-            indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
+            result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+            indata = pd.read_sql_query('select * from ' + job_id + '_' + filename + ' limit 0', engine)
             # 두 테이블의 칼럼을 하나의 리스트로 합침
             new_columns = indata.columns.values
             before_columns = result.column_info.values
@@ -498,7 +498,7 @@ def redshift(dag_id, id, pwd, host, port, database,schema, tables, directory, pk
                     print("Querypie ELT jumps this proccess this time")
                 else:
                     print("Querypie ELT continues this proccess")
-                    engine.execute('alter table {dag_id}_{filename} rename to {dag_id}_{filename}_tmp'.format(dag_id=dag_id,
+                    engine.execute('alter table {job_id}_{filename} rename to {job_id}_{filename}_tmp'.format(job_id=job_id,
                                                                                                     filename=filename))
                     # 두 테이블의 칼럼을 하나의 리스트로 합친후 빈 테이블 db에 생성
                     origin_columns = before_columns
@@ -507,31 +507,31 @@ def redshift(dag_id, id, pwd, host, port, database,schema, tables, directory, pk
                             before_columns.append(v)
                     result_columns = before_columns
                     df = pd.DataFrame([], columns=result_columns, index=[])
-                    df.to_sql(dag_id + '_' + filename, engine, if_exists='error', index=False)
+                    df.to_sql(job_id + '_' + filename, engine, if_exists='error', index=False)
 
                     column_list = ','.join(origin_columns)
                     engine.execute(
-                        'insert into {dag_id}_{filename}({columns}) (select * from {dag_id}_{filename}_tmp)'.format(dag_id=dag_id,
+                        'insert into {job_id}_{filename}({columns}) (select * from {job_id}_{filename}_tmp)'.format(job_id=job_id,
                                                                                                        filename=filename,
                                                                                                        columns=column_list))
-                    result.to_sql(dag_id + '_' + filename, engine, if_exists='append',index=False)
+                    result.to_sql(job_id + '_' + filename, engine, if_exists='append',index=False)
                     engine.execute(
-                        'drop table if exists {schema}.{dag_id}_{table}_tmp'.format(schema=schema, dag_id=dag_id,
+                        'drop table if exists {schema}.{job_id}_{table}_tmp'.format(schema=schema, job_id=job_id,
                                                                                     table=filename))
             else:
-                result.to_sql(dag_id + '_' + filename, engine, if_exists='append',
+                result.to_sql(job_id + '_' + filename, engine, if_exists='append',
                               index=False)
 
 
         elif upsert[i] == 'merge':
             try:
-                engine.execute('select 1 from {schema}.{dag_id}_{table}'.format(schema=schema,dag_id=dag_id,filename=filename))
+                engine.execute('select 1 from {schema}.{job_id}_{table}'.format(schema=schema,job_id=job_id,filename=filename))
             except:
-                result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-                result.to_sql(dag_id+'_'+filename,schema=schema, con=engine, if_exists='replace', index=False)
+                result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+                result.to_sql(job_id+'_'+filename,schema=schema, con=engine, if_exists='replace', index=False)
             else:
-                result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-                indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
+                result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+                indata = pd.read_sql_query('select * from ' + job_id + '_' + filename + ' limit 0', engine)
                 # 두 테이블의 칼럼을 하나의 리스트로 합침
                 new_columns = indata.columns.values
                 before_columns = result.column_info.values
@@ -551,7 +551,7 @@ def redshift(dag_id, id, pwd, host, port, database,schema, tables, directory, pk
                     else:
                         print("Querypie ELT continues this proccess")
                         engine.execute(
-                            'alter table {dag_id}_{filename} rename to {dag_id}_{filename}_tmp'.format(dag_id=dag_id,
+                            'alter table {job_id}_{filename} rename to {job_id}_{filename}_tmp'.format(job_id=job_id,
                                                                                                        filename=filename))
                         # 두 테이블의 칼럼을 하나의 리스트로 합친후 빈 테이블 db에 생성
                         origin_columns = before_columns
@@ -560,15 +560,15 @@ def redshift(dag_id, id, pwd, host, port, database,schema, tables, directory, pk
                                 before_columns.append(v)
                         result_columns = before_columns
                         df = pd.DataFrame([], columns=result_columns, index=[])
-                        df.to_sql(dag_id + '_' + filename, engine, if_exists='error', index=False)
+                        df.to_sql(job_id + '_' + filename, engine, if_exists='error', index=False)
 
                         column_list = ','.join(origin_columns)
                         engine.execute(
-                            'insert into {dag_id}_{filename}({columns}) (select * from {dag_id}_{filename}_tmp)'.format(
-                                dag_id=dag_id,
+                            'insert into {job_id}_{filename}({columns}) (select * from {job_id}_{filename}_tmp)'.format(
+                                job_id=job_id,
                                 filename=filename,
                                 columns=column_list))
-                        result.to_sql(dag_id + '_' + filename + '_tmp', engine, if_exists='replace', index=False)
+                        result.to_sql(job_id + '_' + filename + '_tmp', engine, if_exists='replace', index=False)
                         #여기 밑에 머지 넣으면 됨
 
                         column_string_to_list = columns[i].split(',')
@@ -583,25 +583,25 @@ def redshift(dag_id, id, pwd, host, port, database,schema, tables, directory, pk
                                 update_new = '{column_name}=tmp.{column_name}'.format(column_name=j)
                             update = update + update_new
                         engine.execute(
-                            'ALTER TABLE {schema}.{dag_id}_{table} ADD UNIQUE ({pk});'.format(dag_id=dag_id, pk=pk[i],
+                            'ALTER TABLE {schema}.{job_id}_{table} ADD UNIQUE ({pk});'.format(job_id=job_id, pk=pk[i],
                                                                                               schema=schema,
                                                                                               table=filename))
                         new_columns_with_tmp = ['tmp.' + x for x in new_columns]
                         new_columns_with_tmp = ','.join(new_columns_with_tmp)
                         new_columns = ','.join(new_columns)
 
-                        query1 = "UPDATE {schema}.{dag_id}_{filename} SET {update} " \
-                                 "FROM {schema}.{dag_id}_{filename}_tmp tmp WHERE {dag_id}_{table}.{pk} = tmp.{pk};" \
-                            .format(schema=schema, dag_id=dag_id, filename=filename, update=update, pk=pk[i])
-                        query2 = "INSERT INTO {schema}.{dag_id}_{filename}({columns}) SELECT {columns_with_tmp} " \
-                                 "FROM {schema}.{dag_id}_{filename}_tmp tmp " \
-                                 "WHERE tmp.{pk} NOT IN ( SELECT {pk} FROM {schema}.{dag_id}_{filename})" \
-                            .format(schema=schema, dag_id=dag_id, filename=filename, update=update, pk=pk[i],
+                        query1 = "UPDATE {schema}.{job_id}_{filename} SET {update} " \
+                                 "FROM {schema}.{job_id}_{filename}_tmp tmp WHERE {job_id}_{table}.{pk} = tmp.{pk};" \
+                            .format(schema=schema, job_id=job_id, filename=filename, update=update, pk=pk[i])
+                        query2 = "INSERT INTO {schema}.{job_id}_{filename}({columns}) SELECT {columns_with_tmp} " \
+                                 "FROM {schema}.{job_id}_{filename}_tmp tmp " \
+                                 "WHERE tmp.{pk} NOT IN ( SELECT {pk} FROM {schema}.{job_id}_{filename})" \
+                            .format(schema=schema, job_id=job_id, filename=filename, update=update, pk=pk[i],
                                     columns=new_columns, columns_with_tmp=new_columns_with_tmp)
                         engine.execute(query1)
                         engine.execute(query2)
                         engine.execute(
-                            'drop table if exists {schema}.{dag_id}_{filename}_tmp'.format(dag_id=dag_id,
+                            'drop table if exists {schema}.{job_id}_{filename}_tmp'.format(job_id=job_id,
                                                                                            filename=filename,
                                                                                            schema=schema))
                 else:
@@ -611,15 +611,15 @@ def redshift(dag_id, id, pwd, host, port, database,schema, tables, directory, pk
                     #     if (update):
                     #         update = update + ','
                     #     update = update + '{column_name}=s.{column_name}'.format(column_name=j)
-                    # update_query = "update {schema}.{dag_id}_{table} e set {update} from {schema}.{dag_id}_{table}_tmp s where e.{pk}=s.{pk};".format(
-                    #     table=filename, pk=pk[i], update=update, dag_id=dag_id, schema=schema)
-                    # result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-                    # result.to_sql('{dag_id}_{table}_tmp'.format(dag_id=dag_id,filename=filename),schema=schema, con=engine, if_exists='replace', index=False)
+                    # update_query = "update {schema}.{job_id}_{table} e set {update} from {schema}.{job_id}_{table}_tmp s where e.{pk}=s.{pk};".format(
+                    #     table=filename, pk=pk[i], update=update, job_id=job_id, schema=schema)
+                    # result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+                    # result.to_sql('{job_id}_{table}_tmp'.format(job_id=job_id,filename=filename),schema=schema, con=engine, if_exists='replace', index=False)
                     # engine.execute(update_query)
-                    # insert_query = "insert into {schema}.{dag_id}_{table} e select s.* from {dag_id}_{table}_tmp s left join e on s.{pk}=e.{pk} where e.{pk} is NULL;".format(
-                    #     table=filename, pk=pk, dag_id=dag_id)
+                    # insert_query = "insert into {schema}.{job_id}_{table} e select s.* from {job_id}_{table}_tmp s left join e on s.{pk}=e.{pk} where e.{pk} is NULL;".format(
+                    #     table=filename, pk=pk, job_id=job_id)
                     # engine.execute(insert_query)
-                    # engine.execute('drop table if exists {schema}.{dag_id}_{table}_tmp'.format(schema=schema,dag_id=dag_id, table=filename))
+                    # engine.execute('drop table if exists {schema}.{job_id}_{table}_tmp'.format(schema=schema,job_id=job_id, table=filename))
                     column_string_to_list = columns[i].split(',')
                     update = ''
                     for j in column_string_to_list:
@@ -632,29 +632,29 @@ def redshift(dag_id, id, pwd, host, port, database,schema, tables, directory, pk
                             update_new = '{column_name}=tmp.{column_name}'.format(column_name=j)
                         update = update + update_new
                     engine.execute(
-                        'ALTER TABLE {schema}.{dag_id}_{table} ADD UNIQUE ({pk});'.format(dag_id=dag_id, pk=pk[i],
+                        'ALTER TABLE {schema}.{job_id}_{table} ADD UNIQUE ({pk});'.format(job_id=job_id, pk=pk[i],
                                                                                           schema=schema,
                                                                                           table=filename))
                     new_columns_with_tmp = ['tmp.' + x for x in new_columns]
                     new_columns_with_tmp = ','.join(new_columns_with_tmp)
                     new_columns = ','.join(new_columns)
 
-                    query1 = "UPDATE {schema}.{dag_id}_{filename} SET {update} " \
-                             "FROM {schema}.{dag_id}_{filename}_tmp tmp WHERE {dag_id}_{table}.{pk} = tmp.{pk};" \
-                        .format(schema=schema, dag_id=dag_id, filename=filename, update=update, pk=pk[i])
-                    query2 = "INSERT INTO {schema}.{dag_id}_{filename}({columns}) SELECT {columns_with_tmp} " \
-                             "FROM {schema}.{dag_id}_{filename}_tmp tmp " \
-                             "WHERE tmp.{pk} NOT IN ( SELECT {pk} FROM {schema}.{dag_id}_{filename})" \
-                        .format(schema=schema, dag_id=dag_id, filename=filename, update=update, pk=pk[i],
+                    query1 = "UPDATE {schema}.{job_id}_{filename} SET {update} " \
+                             "FROM {schema}.{job_id}_{filename}_tmp tmp WHERE {job_id}_{table}.{pk} = tmp.{pk};" \
+                        .format(schema=schema, job_id=job_id, filename=filename, update=update, pk=pk[i])
+                    query2 = "INSERT INTO {schema}.{job_id}_{filename}({columns}) SELECT {columns_with_tmp} " \
+                             "FROM {schema}.{job_id}_{filename}_tmp tmp " \
+                             "WHERE tmp.{pk} NOT IN ( SELECT {pk} FROM {schema}.{job_id}_{filename})" \
+                        .format(schema=schema, job_id=job_id, filename=filename, update=update, pk=pk[i],
                                 columns=new_columns, columns_with_tmp=new_columns_with_tmp)
                     engine.execute(query1)
                     engine.execute(query2)
                     engine.execute(
-                        'drop table if exists {schema}.{dag_id}_{filename}_tmp'.format(dag_id=dag_id, filename=filename,
+                        'drop table if exists {schema}.{job_id}_{filename}_tmp'.format(job_id=job_id, filename=filename,
                                                                                        schema=schema))
 
 
-def mysql(dag_id, id, pwd, host, port, database, tables, directory, option, pk, upsert, updated, columns):
+def mysql(job_id, id, pwd, host, port, database, tables, directory, option, pk, upsert, updated, columns):
     """
     load data in mysql
     :param id:login id
@@ -685,11 +685,11 @@ def mysql(dag_id, id, pwd, host, port, database, tables, directory, option, pk, 
     for i in range(len(tables)):
         filename = tables[i]
         if upsert[i] == 'truncate':
-            result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-            result.to_sql(dag_id+'_'+filename, engine, if_exists='replace', index=False)
+            result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+            result.to_sql(job_id+'_'+filename, engine, if_exists='replace', index=False)
         elif upsert[i] == 'increasement':
-            result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-            indata = pd.read_sql_query('select * from ' + dag_id+'_'+filename+' limit 0', engine)
+            result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+            indata = pd.read_sql_query('select * from ' + job_id+'_'+filename+' limit 0', engine)
             # 두 테이블의 칼럼을 하나의 리스트로 합침
             #before_columns: 기존에 있었던 칼럼들
             #new_columns: 새로 추가될 테이블의 칼럼
@@ -710,7 +710,7 @@ def mysql(dag_id, id, pwd, host, port, database, tables, directory, option, pk, 
                     print("Querypie ELT jumps this proccess this time")
                 else:
                     print("Querypie ELT continues this proccess")
-                    engine.execute('rename table {dag_id}_{filename} to {dag_id}_{filename}_tmp'.format(dag_id=dag_id,
+                    engine.execute('rename table {job_id}_{filename} to {job_id}_{filename}_tmp'.format(job_id=job_id,
                                                                                                   filename=filename))
                     # 두 테이블의 칼럼을 하나의 리스트로 합친후 빈 테이블 db에 생성
                     origin_columns = before_columns
@@ -719,28 +719,28 @@ def mysql(dag_id, id, pwd, host, port, database, tables, directory, option, pk, 
                             before_columns.append(c)
                     result_columns=before_columns
                     df = pd.DataFrame([], columns=result_columns, index=[])
-                    df.to_sql(dag_id+'_'+filename, engine, if_exists='error', index=False)
+                    df.to_sql(job_id+'_'+filename, engine, if_exists='error', index=False)
 
                     column_list = ','.join(origin_columns)
-                    engine.execute('insert into {dag_id}_{filename}({columns}) select * from {dag_id}_{filename}_tmp'
-                                   .format(dag_id=dag_id,filename=filename,columns=column_list))
-                    result.to_sql(dag_id + '_' + filename, engine, if_exists='append',
+                    engine.execute('insert into {job_id}_{filename}({columns}) select * from {job_id}_{filename}_tmp'
+                                   .format(job_id=job_id,filename=filename,columns=column_list))
+                    result.to_sql(job_id + '_' + filename, engine, if_exists='append',
                                   index=False)
-                    engine.execute('drop table {dag_id}_{filename}_tmp'.format(dag_id=dag_id,filename=filename))
+                    engine.execute('drop table {job_id}_{filename}_tmp'.format(job_id=job_id,filename=filename))
             else:
-                result.to_sql(dag_id + '_' + filename, engine, if_exists='append',
+                result.to_sql(job_id + '_' + filename, engine, if_exists='append',
                               index=False)
 
         elif upsert[i] == 'merge':
             try:
                 #table이 있는지 확인
-                engine.execute('select 1 from {dag_id}_{filename}'.format(dag_id=dag_id,filename=filename))
+                engine.execute('select 1 from {job_id}_{filename}'.format(job_id=job_id,filename=filename))
             except:
-                result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-                result.to_sql(dag_id+'_'+filename, engine, if_exists='replace', index=False)
+                result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+                result.to_sql(job_id+'_'+filename, engine, if_exists='replace', index=False)
             else:
-                result = pd.read_csv(directory + '/' + dag_id + '_' + filename + '.csv', sep=',', quotechar="'")
-                indata = pd.read_sql_query('select * from ' + dag_id + '_' + filename + ' limit 0', engine)
+                result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+                indata = pd.read_sql_query('select * from ' + job_id + '_' + filename + ' limit 0', engine)
                 # 두 테이블의 칼럼을 하나의 리스트로 합침
                 # before_columns: 기존에 있었던 칼럼들
                 # new_columns: 새로 추가될 테이블의 칼럼
@@ -762,7 +762,7 @@ def mysql(dag_id, id, pwd, host, port, database, tables, directory, option, pk, 
                     else:
                         print("Querypie ELT continues this proccess")
                         engine.execute(
-                            'rename table {dag_id}_{filename} to {dag_id}_{filename}_tmp'.format(dag_id=dag_id,
+                            'rename table {job_id}_{filename} to {job_id}_{filename}_tmp'.format(job_id=job_id,
                                                                                                  filename=filename))
                         # 두 테이블의 칼럼을 하나의 리스트로 합친후 빈 테이블 db에 생성
                         origin_columns = before_columns
@@ -771,13 +771,13 @@ def mysql(dag_id, id, pwd, host, port, database, tables, directory, option, pk, 
                                 before_columns.append(c)
                         result_columns = before_columns
                         df = pd.DataFrame([], columns=result_columns, index=[])
-                        df.to_sql(dag_id + '_' + filename, engine, if_exists='error', index=False)
+                        df.to_sql(job_id + '_' + filename, engine, if_exists='error', index=False)
 
                         column_list = ','.join(origin_columns)
                         engine.execute(
-                            'insert into {dag_id}_{filename}({columns}) select * from {dag_id}_{filename}_tmp'
-                            .format(dag_id=dag_id, filename=filename, columns=column_list))
-                        result.to_sql(dag_id + '_' + filename+'_tmp', engine, if_exists='replace',
+                            'insert into {job_id}_{filename}({columns}) select * from {job_id}_{filename}_tmp'
+                            .format(job_id=job_id, filename=filename, columns=column_list))
+                        result.to_sql(job_id + '_' + filename+'_tmp', engine, if_exists='replace',
                                       index=False)
                         #truncate와 같이 null로 엎어치기한다음 옮길 데이터를 _tmp에 넣어놓음
                         column_string_to_list = columns[i].split(',')
@@ -789,20 +789,20 @@ def mysql(dag_id, id, pwd, host, port, database, tables, directory, option, pk, 
                             if j not in origin_columns:
                                 update_new = "{column_name}=''".format(column_name=j)
                             else:
-                                update_new = '{column_name}={dag_id}_{table}_tmp.{column_name}'.format(column_name=j,
-                                                                                                        dag_id=dag_id,
+                                update_new = '{column_name}={job_id}_{table}_tmp.{column_name}'.format(column_name=j,
+                                                                                                        job_id=job_id,
                                                                                                         table=filename)
                             update = update + update_new
                         other_columns = ['@'+x for x in result_columns if x not in new_columns]
                         other_columns = ','.join(other_columns)
-                        engine.execute('ALTER TABLE {dag_id}_{table} ADD UNIQUE ({pk});'.format(dag_id=dag_id,pk=pk[i]))
-                        query = "insert into {dag_id}_{table} select {dag_id}_{table}_tmp.*,{other_columns} " \
-                                "from {dag_id}_{table}_tmp where {dag_id}_{table}_tmp.{pk}={pk} on duplicate key update " \
-                                "{update}".format(update=update, pk=pk[i], table=filename, dag_id=dag_id,
+                        engine.execute('ALTER TABLE {job_id}_{table} ADD UNIQUE ({pk});'.format(job_id=job_id,pk=pk[i]))
+                        query = "insert into {job_id}_{table} select {job_id}_{table}_tmp.*,{other_columns} " \
+                                "from {job_id}_{table}_tmp where {job_id}_{table}_tmp.{pk}={pk} on duplicate key update " \
+                                "{update}".format(update=update, pk=pk[i], table=filename, job_id=job_id,
                                                   other_columns=other_columns)
                         engine.execute(query)
                         engine.execute(
-                            'drop table if exists {dag_id}_{filename}_tmp'.format(dag_id=dag_id, filename=filename))
+                            'drop table if exists {job_id}_{filename}_tmp'.format(job_id=job_id, filename=filename))
 
                 else:
                     column_string_to_list = columns[i].split(',')
@@ -810,11 +810,11 @@ def mysql(dag_id, id, pwd, host, port, database, tables, directory, option, pk, 
                     for j in column_string_to_list:
                         if (update):
                             update = update + ','
-                        update = update + '{column_name}={dag_id}_{table}_tmp.{column_name}'.format(column_name=j, dag_id=dag_id, table=filename)
-                    query = "insert into {dag_id}_{table} select * from {dag_id}_{table}_tmp where {dag_id}_{table}_tmp.{pk}={pk} on duplicate key update {update}".format(
-                        update=update, pk=pk[i], table=filename, dag_id=dag_id)
-                    result.to_sql('{dag_id}_{filename}_tmp'.format(dag_id=dag_id,filename=filename), engine, if_exists='replace', index=False)
+                        update = update + '{column_name}={job_id}_{table}_tmp.{column_name}'.format(column_name=j, job_id=job_id, table=filename)
+                    query = "insert into {job_id}_{table} select * from {job_id}_{table}_tmp where {job_id}_{table}_tmp.{pk}={pk} on duplicate key update {update}".format(
+                        update=update, pk=pk[i], table=filename, job_id=job_id)
+                    result.to_sql('{job_id}_{filename}_tmp'.format(job_id=job_id,filename=filename), engine, if_exists='replace', index=False)
                     engine.execute(query)
-                    engine.execute('drop table if exists {dag_id}_{filename}_tmp'.format(dag_id=dag_id,filename=filename))
+                    engine.execute('drop table if exists {job_id}_{filename}_tmp'.format(job_id=job_id,filename=filename))
 
 #mysql 은 기존 머지를 하되 없어진 칼럼은 ''로 하고, 나머지는 increasement 와 같이 처리(increasement와 같이 하는 처리를 먼저해야함)

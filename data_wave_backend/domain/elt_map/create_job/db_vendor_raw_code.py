@@ -9,23 +9,21 @@ from dto.table_list_dto import Table_List_Dto
 
 def make_mysql_raw_code(connection: ConnectionDto, job: JobInfoDto, table_lists: List[Table_List_Dto],
                         session: Session) -> str:
-    table_list_uuids = map(lambda table_list: table_list.uuid, table_lists)
+    table_list_uuids = list(map(lambda table_list: table_list.uuid, table_lists))
     get_data = '''
-    {job_
-     )'''.format(task_id=task_id,
-                 func_name=func_name,
-                 db_type=connection.db_type,
-                 user=connection.user,
-                 pwd=connection.password,
-                 host=connection.host,
-                 port=connection.port,
-                 database=connection.database,
-                 csv_files_directory=job.csv_files_directory,
-                 option=connection.option,
-                 table_list_uuids=table_list_uuids,
-                 cron_expression=job.schedule_interval,
-                 job_id=job.job_id,
-                 )
+    "{job_id}", "{user}", "{pwd}", "{host}", "{port}", "{database}", "{csv_files_directory}", "{cron_expression}", {table_list_uuids}, "{option}"
+    '''.format(db_type=connection.db_type,
+               user=connection.user,
+               pwd=connection.password,
+               host=connection.host,
+               port=connection.port,
+               database=connection.database,
+               csv_files_directory=job.csv_files_directory,
+               option=connection.option,
+               table_list_uuids=table_list_uuids,
+               cron_expression=job.schedule_interval,
+               job_id=job.job_id,
+               )
     return get_data
 
 
@@ -83,7 +81,6 @@ def make_snowflake_raw_code(connection: ConnectionDto, job: JobInfoDto, table_li
 
 def make_amazon_raw_code(connection: ConnectionDto, job: JobInfoDto, table_lists: [Table_List_Dto],
                          session: Session) -> str:
-
     connection_type = 'ex'
     if connection_type == 'ex':
         task_id = 'get_data'
@@ -133,5 +130,5 @@ def make_amazon_raw_code(connection: ConnectionDto, job: JobInfoDto, table_lists
 
 
 def map_table_info(table_lists: List[Table_List_Dto]) -> [str]:
-    uuids = map(lambda table_list : table_list.uuid , table_lists)
+    uuids = map(lambda table_list: table_list.uuid, table_lists)
     return uuids

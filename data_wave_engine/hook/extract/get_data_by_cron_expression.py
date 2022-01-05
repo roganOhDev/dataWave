@@ -19,7 +19,7 @@ class Get_Data_By_Cron_Expression:
     AMAZON = "select %s from %s,%s where %s >= %s"
 
 
-def get_data_by_cron_expression_mysql(csv_files_directory: str, dag_id: str, connection: MySQLConnectionAbstract,
+def get_data_by_cron_expression_mysql(csv_files_directory: str, job_id: str, connection: MySQLConnectionAbstract,
                                       column_list: List[str], table: str, updated_column: str, cron_expression: str):
     column_str = convert_str_list_to_string(column_list)
     before_time = get_before_update_time(cron_expression)
@@ -35,7 +35,7 @@ def get_data_by_cron_expression_mysql(csv_files_directory: str, dag_id: str, con
 
     data = pd.DataFrame(records)
 
-    data.to_csv(csv_files_directory + '/' + dag_id + '_' + table + '.csv', sep=',', quotechar="'", na_rep='NaN',
+    data.to_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', sep=',', quotechar="'", na_rep='NaN',
                 index=False)
 
 

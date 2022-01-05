@@ -4,11 +4,11 @@ from data_wave_engine.hook.get_information_from_user.const_value import *
 from data_wave_engine.hook.get_information_from_user.structs import db_info
 
 
-def get_db_info(dag, type):
+def get_db_info(job, type):
     db_type = get_db_type()
     db_flag = db_flag_maker(db_type)
     db_url_component = get_db_url(db_flag)
-    raw_data = raw_code_maker(db_url_component, dag, type)
+    raw_data = raw_code_maker(db_url_component, job, type)
     metadata = pd.DataFrame(raw_data)
     return metadata, db_url_component.db_type
 
@@ -34,13 +34,13 @@ def db_flag_maker(db_type):
         return db.postgresql
 
 
-def mysql_raw_code_maker(db_url_component, dag, type):
-    raw_data = {'dag_id': [dag.dag_id],
-                'owner': [dag.owner],
-                'directory': [dag.csv_files_directory],
-                'start_date': [dag.start_date],
-                'catchup': [dag.catchup],
-                'schedule_interval': [dag.schedule_interval],
+def mysql_raw_code_maker(db_url_component, job, type):
+    raw_data = {'job_id': [job.job_id],
+                'owner': [job.owner],
+                'directory': [job.csv_files_directory],
+                'start_date': [job.start_date],
+                'catchup': [job.catchup],
+                'schedule_interval': [job.schedule_interval],
                 'db_type': [db_url_component.db_type],
                 'db_information': [
                     """{{'id': '{id}', 'pwd': '{pwd}', 'host': '{host}', 'port': '{port}' 'option': '{option}'}}
@@ -50,13 +50,13 @@ def mysql_raw_code_maker(db_url_component, dag, type):
     return raw_data
 
 
-def snowflake_raw_code_maker(db_url_component, dag, type):
-    raw_data = {'dag_id': [dag.dag_id],
-                'owner': [dag.owner],
-                'directory': [dag.csv_files_directory],
-                'start_date': [dag.start_date],
-                'catchup': [dag.catchup],
-                'schedule_interval': [dag.schedule_interval],
+def snowflake_raw_code_maker(db_url_component, job, type):
+    raw_data = {'job_id': [job.job_id],
+                'owner': [job.owner],
+                'directory': [job.csv_files_directory],
+                'start_date': [job.start_date],
+                'catchup': [job.catchup],
+                'schedule_interval': [job.schedule_interval],
                 'db_type': [db_url_component.db_type],
                 'db_information': [
                     """{{'id': '{id}', 'pwd': '{pwd}', 'account': '{account}', 'warehouse': '{warehouse}', 'role': '{role}'}}
@@ -66,13 +66,13 @@ def snowflake_raw_code_maker(db_url_component, dag, type):
     return raw_data
 
 
-def amazon_raw_code_maker(db_url_component, dag, type):
-    raw_data = {'dag_id': [dag.dag_id],
-                'owner': [dag.owner],
-                'directory': [dag.csv_files_directory],
-                'start_date': [dag.start_date],
-                'catchup': [dag.catchup],
-                'schedule_interval': [dag.schedule_interval],
+def amazon_raw_code_maker(db_url_component, job, type):
+    raw_data = {'job_id': [job.job_id],
+                'owner': [job.owner],
+                'directory': [job.csv_files_directory],
+                'start_date': [job.start_date],
+                'catchup': [job.catchup],
+                'schedule_interval': [job.schedule_interval],
                 'db_type': [db_url_component.db_type],
                 'db_information': [
                     """{{'id': '{id}', 'pwd': '{pwd}', 'host': '{host}', 'port': '{port}',  'option': '{option}' }}
@@ -82,15 +82,15 @@ def amazon_raw_code_maker(db_url_component, dag, type):
     return raw_data
 
 
-def raw_code_maker(db_url_component, dag, type):
+def raw_code_maker(db_url_component, job, type):
     if db_url_component.db_type == db.mysql:
-        raw_data = mysql_raw_code_maker(db_url_component, dag, type)
+        raw_data = mysql_raw_code_maker(db_url_component, job, type)
 
     elif db_url_component.db_type == db.snowflake:
-        raw_data = snowflake_raw_code_maker(db_url_component, dag, type)
+        raw_data = snowflake_raw_code_maker(db_url_component, job, type)
 
     elif db_url_component.db_type in (db.redshift, db.postgresql):
-        raw_data = amazon_raw_code_maker(db_url_component, dag, type)
+        raw_data = amazon_raw_code_maker(db_url_component, job, type)
 
     return raw_data
 

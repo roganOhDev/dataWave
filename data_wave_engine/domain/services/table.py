@@ -8,7 +8,7 @@ def find(uuid: str)-> Table_List_Dto:
 def a():
     try:
         # response = requests.get(url = client.api_url+"dag?uuid=6bf70256-3bf2-11ec-a910-8c85907aa0b6")
-        response = requests.get(url = client.api_url+"dag?uuid=6bf70256-3bf2-11ec-a91-8c85907aa0b6")
+        response = requests.get(url = client.api_url+"job?uuid=6bf70256-3bf2-11ec-a91-8c85907aa0b6")
         if response.status_code >=400:
             print(response.content.decode('UTF-8'))
         else:

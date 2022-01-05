@@ -91,35 +91,26 @@ def create_file(elt_map: EltMap, session: Session):
     job = job_composite_service.find(elt_map.job_uuid, session)
     extract_connection = connection_composite_service.find(elt_map.integrate_connection_uuid, session)
     load_connection = connection_composite_service.find(elt_map.destination_connection_uuid, session)
-    extract_args = get_extract_data_wave_raw_code(extract_connection, elt_map, session)
-    load_args = get_load_data_wave_raw_code(load_connection, elt_map, session)
+    extract_args = make_data_wave_raw_code(extract_connection, elt_map, session)
+    load_args = make_data_wave_raw_code(load_connection, elt_map, session)
 
     job_code = job_format.format(
         extract_db_type=extract_connection.db_type.lower(),
         load_db_type=load_connection.db_type.lower(),
-        extract_args=,
-        load_args=,
+        extract_args=extract_args,
+        load_args=load_args,
     )
-
-    with open(job.airflow_home + "/jobs/" + job.job_id + ".py", 'w', encoding="utf-8") as file:
+    with open("data_wave_engine/elt_jobs/" + job.job_id + ".py", 'w', encoding="utf-8") as file:
         file.write('{}'.format(job_code))
 
 
 def delete_file(elt_map: EltMap, session: Session):
     job = job_composite_service.find(elt_map.job_uuid, session)
-    file = job.airflow_home + "/dags/" + job.job_id + ".py"
+    file = "data_wave_engine/elt_jobs/" + job.job_id + ".py"
     if os.path.isfile(file):
         os.remove(file)
     else:
         logger.warning(msg="File Doesn't Exist")
-
-
-def get_extract_data_wave_raw_code(extract_connection: ConnectionDto, elt_map: EltMap, session: Session) -> str:
-    return make_data_wave_raw_code(extract_connection, elt_map, session)
-
-
-def get_load_data_wave_raw_code(load_connection: ConnectionDto, elt_map: EltMap, session: Session) -> str:
-    return make_data_wave_raw_code(load_connection, elt_map, session)
 
 
 def make_data_wave_raw_code(connection: ConnectionDto, elt_map: EltMap, session: Session) -> str:

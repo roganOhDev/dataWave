@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from domain.job import job_service as service
 from domain.job.job_infoes import JobInfo
-from domain.os.get_pwd import *
 from dto import job_info_dto
 from dto.elt_map_dto import EltMapSaveDto
 from exception.already_exists_job_id_exception import AlreadyExistsJobIdException
@@ -47,14 +46,10 @@ def job_info(request: job_info_dto.JobCreateDto, session: Session):
 
     job = JobInfo()
     job.job_id = request.job_id
-    job.owner = job.owner if not request.owner else request.owner
-    job.catchup = request.catchup
     job.schedule_interval = request.schedule_interval
     job.start_date = request.start_date
-    job.yesterday = request.yesterday
 
-    job.airflow_home, job.backend_url = get_airflow_home_and_backend_url()
-    job.csv_files_directory = def_csv_dir(job.airflow_home)
+    job.csv_files_directory = request.csv_files_directory
     return job
 
 
