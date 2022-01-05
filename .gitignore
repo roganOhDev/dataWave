@@ -1,4 +1,4 @@
 .idea
 __pycache__
-airflow/dags/
+data_wave_engine/elt_jobs/
 
