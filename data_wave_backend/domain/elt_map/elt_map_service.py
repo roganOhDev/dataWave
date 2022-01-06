@@ -14,6 +14,10 @@ def find(uuid: str, session: Session, validate: bool) -> EltMap:
     return elt_map
 
 
+def find_all_by_using(session: Session) -> List[EltMap]:
+    return repository.find_all_by_using(session)
+
+
 def save(request: EltMap, session: Session):
     repository.save(request, session)
 

@@ -1,4 +1,3 @@
-import socket
 import traceback
 
 import uvicorn
@@ -9,9 +8,11 @@ from starlette.requests import Request
 from uvicorn.config import LOGGING_CONFIG
 
 from common.utils.logger import logger
-from domain.call_api import job_api
+from domain.call_api import elt_map_api
 from exception.engine_exception import EngineException
 from middle.controller import dispatch
+from router import job_router
+import client
 
 
 def create_app():
@@ -22,6 +23,7 @@ def create_app():
 
 
 def add_router(app_birth):
+    app_birth.include_router(job_router.router, prefix="/job")
     return app_birth
 
 
@@ -50,14 +52,8 @@ app.middleware('http')(catch_exceptions_middleware)
 
 def run():
     LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s [%(name)s] %(levelprefix)s %(message)s"
-    uvicorn.run("engine_application:app", host=get_ip(), port=8800, reload=True,
+    uvicorn.run("engine_application:app", host=client.get_ip(), port=8800, reload=True,
                 reload_dirs=["./data_wave_engine"],reload_excludes=["./data_wave_engine/elt_jobs"], use_colors=True)
-
-
-def get_ip() -> str:
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    return s.getsockname()[0]
 
 
 @app.on_event("startup")
@@ -66,10 +62,9 @@ def startup():
 
 
 def fill_scheduler():
-    job_ids = job_api.get_activate_job_uuids()
+    job_ids = elt_map_api.get_activate_job_uuids()
 
     for job_id in job_ids:
-        job = job_api.get_job_by_uuid(job_id)
         import_str = "from {0} import {1}".format("elt_jobs." + job_id, "add_job")
         exec(import_str, globals())
         add_job()

@@ -13,5 +13,7 @@ def do_etl():
     
     
 def add_job():
-    sched.add_job(do_etl, 'cron', {cron}, id=__file__)
+    file_name = (os.path.basename(__file__)).split('.')[0]
+    sched.add_job(do_etl, 'cron', {cron}, id=file_name)
+    
 """

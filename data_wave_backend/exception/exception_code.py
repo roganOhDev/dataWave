@@ -25,3 +25,6 @@ class ExceptionCode:
         USING_JOB = "DWB-0501"
         CONNECTIONS_ARE_NOT_EQUAL = "DWB-0502"
         NOT_EXIST_FILE = "DWB-0503"
+
+    class Engine:
+        ENGINE_EXCEPTION = "DWB-0900"

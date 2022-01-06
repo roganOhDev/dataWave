@@ -1,7 +1,7 @@
 from typing import List
 
 from common.utils import request_util
-from domain.call_api.client import Client
+from client import Client
 from domain.dto.job_info_dto import JobInfoDto
 
 

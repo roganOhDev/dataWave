@@ -1,4 +1,4 @@
-import socket
+
 import traceback
 
 import uvicorn
@@ -16,6 +16,7 @@ from router import connection_router
 from router import job_router
 from router import elt_map_router
 from router import table_router
+import api_server
 
 
 def create_app():
@@ -60,14 +61,9 @@ app.middleware('http')(catch_exceptions_middleware)
 
 def run():
     LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s [%(name)s] %(levelprefix)s %(message)s"
-    uvicorn.run("api_application:app", host=get_ip(), port=8000, reload=True,
+    uvicorn.run("api_application:app", host=api_server.get_ip(), port=8000, reload=True,
                 reload_dirs=["./data_wave_backend"], use_colors=True)
 
-
-def get_ip() -> str:
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    return s.getsockname()[0]
 
 
 if __name__ == "__main__":

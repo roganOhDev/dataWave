@@ -15,21 +15,20 @@ def find(uuid: str, session: Session = Depends(db.session)) -> EltMapDto:
     return composite_service.find(uuid, session)
 
 
+@router.get("/activated")
+def get_activated(session: Session = Depends(db.session)) -> List[str]:
+    return composite_service.find_activated_job_ids(session)
+
+
 @router.put("")
 def create(request: EltMapSaveDto, session: Session = Depends(db.session)):
     composite_service.create(request, session)
 
 
-@router.put("/activate")
-def activate(uuid: str, session: Session = Depends(db.session)):
-    composite_service.activate(uuid, session)
+@router.put("/update_activate")
+def update_is_activate(uuid: str, session: Session = Depends(db.session)):
+    composite_service.update_is_activate(uuid, session)
 
-
-@router.put("/deactivate")
-def deactivate(uuid: str, session: Session = Depends(db.session)):
-    composite_service.deactivate(uuid, session)
-
-#TODO : cancel  (실행중에)
 
 @router.put("/{uuid}")
 def update(uuid: str, request: EltMapSaveDto, session: Session = Depends(db.session)):

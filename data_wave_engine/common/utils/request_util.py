@@ -1,6 +1,6 @@
 import requests
 
-from domain.call_api.client import Client
+from client import Client
 
 
 def get(url: str):

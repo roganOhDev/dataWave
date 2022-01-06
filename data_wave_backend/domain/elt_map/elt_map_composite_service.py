@@ -1,8 +1,12 @@
+import ast
+import json
 import os
 from datetime import datetime
 
+import requests
 from cron_converter import Cron
 
+import api_server
 from common.utils.list_converter import *
 from common.utils.logger import logger
 from domain.connection import connection_composite_service
@@ -10,13 +14,14 @@ from domain.connection.db_type import Db_Type
 from domain.elt_map import elt_map_service as service
 from domain.elt_map.create_job.db_vendor_raw_code import *
 from domain.elt_map.create_job.job_format import job_format
+from domain.elt_map.cron_expression import Non_Standard_Cron
 from domain.elt_map.elt_map import EltMap
 from domain.job import job_composite_service
 from domain.table import table_composite_service
 from dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
 from exception.caanot_use_this_job_exception import CannotUseThisJobException
 from exception.connections_are_not_equal import ConnectionsAreNotEqual
-from domain.elt_map.cron_expression import Non_Standard_Cron
+from exception.engine_exception import EngineException
 
 
 def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: EltMap) -> EltMap:
@@ -34,6 +39,11 @@ def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: Elt
 def find(uuid: str, session: Session) -> EltMapDto:
     elt_map = service.find(uuid, session, True)
     return of(elt_map)
+
+
+def find_activated_job_ids(session: Session) -> List[str]:
+    elt_maps = service.find_all_by_using(session)
+    return list(map(lambda elt_map: job_composite_service.find_by_uuid(elt_map.job_uuid, session).job_id, elt_maps))
 
 
 def create(request: EltMapSaveDto, session: Session):
@@ -61,19 +71,17 @@ def delete(uuids: List[str], session: Session):
         service.delete(elt_map, session)
 
 
-def activate(uuid: str, session: Session):
+def update_is_activate(uuid: str, session: Session):
     elt_map = service.find(uuid, session, True)
-    elt_map.active = True
-    create_file(elt_map, session)
-    #TODO : call engien api
-    service.save(elt_map, session)
 
+    if not elt_map.active:
+        create_file(elt_map, session)
+        add_schedule(elt_map, session)
+    else:
+        delete_file(elt_map, session)
+        delete_schedule(elt_map, session)
 
-def deactivate(uuid: str, session: Session):
-    elt_map = service.find(uuid, session, True)
-    elt_map.active = False
-    delete_file(elt_map, session)
-    #TODO : call engien api
+    elt_map.active = not elt_map.active
     service.save(elt_map, session)
 
 
@@ -112,7 +120,7 @@ def create_file(elt_map: EltMap, session: Session):
 
 
 def delete_file(elt_map: EltMap, session: Session):
-    job = job_composite_service.find(elt_map.job_uuid, session)
+    job = job_composite_service.find_by_uuid(elt_map.job_uuid, session)
     file = "data_wave_engine/elt_jobs/" + job.job_id + ".py"
     if os.path.isfile(file):
         os.remove(file)
@@ -155,3 +163,25 @@ def translate_cron(cron_expression: str) -> str:
                              )
 
     return response
+
+
+def add_schedule(elt_map: EltMap, session: Session):
+    engine_ip = api_server.get_ip()
+    job_id = job_composite_service.find_by_uuid(elt_map.job_uuid, session).job_id
+    data = {"job_id": job_id}
+    response = requests.put(url="http://{ip}:8800/job".format(ip=engine_ip), data=json.dumps(data))
+    if not response.ok:
+        error_detail = ast.literal_eval(response.content.decode('utf-8'))['detail']
+        error_message = ast.literal_eval(error_detail)['detail']
+        raise EngineException(error_message)
+
+
+def delete_schedule(elt_map: EltMap, session: Session):
+    engine_ip = api_server.get_ip()
+    job_id = job_composite_service.find_by_uuid(elt_map.job_uuid, session).job_id
+    data = {"job_id": job_id}
+    response = requests.delete(url="http://{ip}:8800/job/{job_id}".format(ip=engine_ip, job_id=job_id))
+    if not response.ok:
+        error_detail = ast.literal_eval(response.content.decode('utf-8'))['detail']
+        error_message = ast.literal_eval(error_detail)['detail']
+        raise EngineException(error_message)
