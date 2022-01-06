@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 
+from croniter import croniter
 from sqlalchemy.orm import Session
 
 from domain.job import job_service as service
@@ -8,6 +9,7 @@ from domain.job.job_infoes import JobInfo
 from dto import job_info_dto
 from dto.elt_map_dto import EltMapSaveDto
 from exception.already_exists_job_id_exception import AlreadyExistsJobIdException
+from exception.not_valid_cron_expression import NotValidCronExpression
 
 
 def save(request: job_info_dto.JobCreateDto, session: Session):
@@ -17,12 +19,11 @@ def save(request: job_info_dto.JobCreateDto, session: Session):
 
 def update(uuid: str, request: job_info_dto.JobUpdateDto, session: Session):
     job = service.find_by_uuid(uuid, session, True)
-    validate_job_id(request.job_id, job.id, False, session)
+    validate_job(job.schedule_interval, request.job_id, job.id, False, session)
 
     job.job_id = job.job_id if not request.job_id else request.job_id
     job.owner = job.owner if not request.owner else request.owner
     job.start_date = job.start_date if not request.start_date else request.start_date
-    job.catchup = job.catchup if not request.catchup else request.catchup
     job.schedule_interval = job.schedule_interval if not request.schedule_interval else request.schedule_interval
     job.csv_files_directory = job.csv_files_directory if not request.csv_files_directory else request.csv_files_directory
     job.updated_at = datetime.now()
@@ -47,7 +48,7 @@ def delete(uuids: List[str], session: Session):
 
 
 def job_info(request: job_info_dto.JobCreateDto, session: Session):
-    validate_job_id(request.job_id, 0, True, session)
+    validate_job(request.schedule_interval, request.job_id, 0, True, session)
 
     job = JobInfo()
     job.job_id = request.job_id
@@ -58,7 +59,12 @@ def job_info(request: job_info_dto.JobCreateDto, session: Session):
     return job
 
 
-def validate_job_id(job_id: str, id: int, new: bool, session: Session):
+def validate_job(cron_expression: str, job_id: str, id: int, new: bool, session: Session):
+    validate_job_id(job_id, id, new, session)
+    validate_cron(cron_expression)
+
+
+def validate_job_id(job_id: str, id, new: bool, session: Session):
     if job_id:
         jobs = find_all_by_job_id(job_id, session)
         if new:
@@ -66,6 +72,11 @@ def validate_job_id(job_id: str, id: int, new: bool, session: Session):
                 raise AlreadyExistsJobIdException()
         elif len(jobs) > 1 | (False if not jobs is None else jobs[0].id != id):
             raise AlreadyExistsJobIdException()
+
+
+def validate_cron(cron_expression: str):
+    if not croniter.is_valid(cron_expression):
+        raise NotValidCronExpression()
 
 
 def find_all_by_job_id(job_id: str, session: Session) -> List[JobInfo]:

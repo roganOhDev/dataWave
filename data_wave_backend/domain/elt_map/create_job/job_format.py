@@ -13,5 +13,5 @@ def do_etl():
     
     
 def add_job():
-    sched.add_job(do_etl, 'cron', {cron}, id = __file__)
+    sched.add_job(do_etl, 'cron', {cron}, id=__file__)
 """

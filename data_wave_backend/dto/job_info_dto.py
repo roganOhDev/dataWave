@@ -12,7 +12,7 @@ class JobCreateDto(BaseModel):
     owner: str = ''
     start_date: str = '({year},{month},{day})'.format(year=yesterday.year, month=yesterday.month,
                                                       day=yesterday.day)
-    schedule_interval: str = "@once"
+    schedule_interval: str = "@daily"
     csv_files_directory: str
 
 

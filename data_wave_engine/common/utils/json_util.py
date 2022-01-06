@@ -1,8 +1,6 @@
 import datetime
 import json as base_json
 
-from exception.type_exception import TypeException
-
 
 def json(data):
     return base_json.dumps(data.__dict__, default=json_default)

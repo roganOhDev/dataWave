@@ -29,6 +29,7 @@ def activate(uuid: str, session: Session = Depends(db.session)):
 def deactivate(uuid: str, session: Session = Depends(db.session)):
     composite_service.deactivate(uuid, session)
 
+#TODO : cancel  (실행중에)
 
 @router.put("/{uuid}")
 def update(uuid: str, request: EltMapSaveDto, session: Session = Depends(db.session)):

@@ -16,10 +16,3 @@ def a():
     finally:
         print("fin")
 #
-
-
-
-
-
-
-a()

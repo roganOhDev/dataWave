@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 
+from cron_converter import Cron
+
 from common.utils.list_converter import *
 from common.utils.logger import logger
 from domain.connection import connection_composite_service
@@ -14,6 +16,7 @@ from domain.table import table_composite_service
 from dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
 from exception.caanot_use_this_job_exception import CannotUseThisJobException
 from exception.connections_are_not_equal import ConnectionsAreNotEqual
+from domain.elt_map.cron_expression import Non_Standard_Cron
 
 
 def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: EltMap) -> EltMap:
@@ -62,6 +65,7 @@ def activate(uuid: str, session: Session):
     elt_map = service.find(uuid, session, True)
     elt_map.active = True
     create_file(elt_map, session)
+    #TODO : call engien api
     service.save(elt_map, session)
 
 
@@ -69,6 +73,7 @@ def deactivate(uuid: str, session: Session):
     elt_map = service.find(uuid, session, True)
     elt_map.active = False
     delete_file(elt_map, session)
+    #TODO : call engien api
     service.save(elt_map, session)
 
 
@@ -137,4 +142,16 @@ def make_data_wave_raw_code(job: JobInfoDto, connection: ConnectionDto, elt_map:
 
 
 def translate_cron(cron_expression: str) -> str:
-    return "translated cron with params"
+    format = '''minute="{minute}", hour="{hour}", day="{day}", month="{month}", day_of_week="{week_day}"'''
+
+    cron = Non_Standard_Cron(cron_expression).get_cron_expression()
+    cron_instance = Cron(cron)
+
+    response = format.format(minute=cron_instance.parts[0],
+                             hour=cron_instance.parts[1],
+                             day=cron_instance.parts[2],
+                             month=cron_instance.parts[3],
+                             week_day=cron_instance.parts[4]
+                             )
+
+    return response

@@ -51,7 +51,7 @@ app.middleware('http')(catch_exceptions_middleware)
 def run():
     LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s [%(name)s] %(levelprefix)s %(message)s"
     uvicorn.run("engine_application:app", host=get_ip(), port=8800, reload=True,
-                reload_dirs=["./data_wave_engine"], use_colors=True)
+                reload_dirs=["./data_wave_engine"],reload_excludes=["./data_wave_engine/elt_jobs"], use_colors=True)
 
 
 def get_ip() -> str:

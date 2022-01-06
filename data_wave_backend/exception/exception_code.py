@@ -6,6 +6,7 @@ class ExceptionCode:
         ALREADY_EXITS_JOB_ID = "DWB-0100"
         JOB_NOT_FOUND = "DWB-0101"
         USING_JOB = "DWB-0102"
+        NOT_VALID_CRON_EXPRESSION = "DWB-0103"
 
     class Connection:
         ALREADY_EXITS_CONNECTION_NAME = "DWB-0200"
