@@ -14,9 +14,9 @@ class Get_Data_By_Cron_Expression:
     snowflake : column , schema, table
     mysql : column , schema, table
     '''
-    MYSQL = "select %s from %s,%s where %s >= %s"
-    SNOWFLAKE = "select %s from %s,%s where %s >= %s"
-    AMAZON = "select %s from %s,%s where %s >= %s"
+    MYSQL = "select {columns} from %s,%s where %s >= %s"
+    SNOWFLAKE = "select {columns} from %s,%s where %s >= %s"
+    AMAZON = "select {columns} from %s,%s where %s >= %s"
 
 
 def get_data_by_cron_expression_mysql(csv_files_directory: str, job_id: str, connection: MySQLConnectionAbstract,

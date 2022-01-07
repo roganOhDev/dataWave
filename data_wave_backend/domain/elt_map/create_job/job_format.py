@@ -8,8 +8,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scheduler import sched
 
 def do_etl():
-    do_load.{extract_db_type}({extract_args})
-    do_extract.{load_db_type}({load_args})
+    do_extract.{extract_db_type}({extract_args})
+    do_load.{load_db_type}({load_args})
     
     
 def add_job():

@@ -654,41 +654,22 @@ def redshift(job_id, id, pwd, host, port, database,schema, tables, directory, pk
                                                                                        schema=schema))
 
 
-def mysql(job_id, id, pwd, host, port, database, tables, directory, option, pk, upsert, updated, columns):
-    """
-    load data in mysql
-    :param id:login id
-    :param pwd: login password
-    :param host: db's host
-    :param port: db's host
-    :param database: user's database
-    :param tables: user's database
-    :rypte:list
-    :param directory: directory where csv files in
-    :param upsert: this function will run differently benchmarking upsert
-        :param pk: if upsert=merge then pk=primary key elif upsert=increasement then pk=increase column
-        :param updated:if upsert=merge then updated=updated_at
-        :rtype: both are list
-    :rtype:list
-    :param option: user's option
-    :param columns: user's columns
-    :rtype: list
-    """
+def mysql(job_id, user, pwd, host, port, database, csv_files_directory, table_list_uuids, option):
     engine = sql.create_engine('mysql+pymysql://{u}:{p}@{h}:{port}/{d}{option}'.format(
-        u=id,
+        u=user,
         p=pwd,
         h=host,
         port=port,
         d=database,
         option=option,
     ), encoding='utf-8')
-    for i in range(len(tables)):
-        filename = tables[i]
+    for i in range(len(table_list_uuids)):
+        table_uuid = table_list_uuids[i]
         if upsert[i] == 'truncate':
-            result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+            result = pd.read_csv(csv_files_directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
             result.to_sql(job_id+'_'+filename, engine, if_exists='replace', index=False)
         elif upsert[i] == 'increasement':
-            result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+            result = pd.read_csv(csv_files_directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
             indata = pd.read_sql_query('select * from ' + job_id+'_'+filename+' limit 0', engine)
             # 두 테이블의 칼럼을 하나의 리스트로 합침
             #before_columns: 기존에 있었던 칼럼들
@@ -736,10 +717,10 @@ def mysql(job_id, id, pwd, host, port, database, tables, directory, option, pk, 
                 #table이 있는지 확인
                 engine.execute('select 1 from {job_id}_{filename}'.format(job_id=job_id,filename=filename))
             except:
-                result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+                result = pd.read_csv(csv_files_directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
                 result.to_sql(job_id+'_'+filename, engine, if_exists='replace', index=False)
             else:
-                result = pd.read_csv(directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
+                result = pd.read_csv(csv_files_directory + '/' + job_id + '_' + filename + '.csv', sep=',', quotechar="'")
                 indata = pd.read_sql_query('select * from ' + job_id + '_' + filename + ' limit 0', engine)
                 # 두 테이블의 칼럼을 하나의 리스트로 합침
                 # before_columns: 기존에 있었던 칼럼들

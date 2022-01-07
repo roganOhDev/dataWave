@@ -1,4 +1,6 @@
 class ExceptionCode:
+    TYPE_EXCEPTION = "DWB-0001"
+
     class Backend:
         BackendException = "DWE-0100"
 

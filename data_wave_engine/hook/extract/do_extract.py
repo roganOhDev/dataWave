@@ -19,15 +19,16 @@ in every function
 from datetime import datetime
 from typing import Any, List
 
-import mysql.connector
+import mysql.connector as mysql_connector
 import pandas as pd
 import sqlalchemy as sql
 from croniter import croniter
+from mysql.connector.cursor import MySQLCursorPrepared
 
 from common.utils.json_util import loads
 from common.utils.list_converter import convert_str_list_to_string
-from domain.enums.elt_map import Rule_Set
 from domain.call_api import table_api
+from domain.enums.elt_map import Rule_Set
 from exception.engine_exception import EngineException
 from hook.extract.get_data_by_cron_expression import Get_Data_By_Cron_Expression
 from hook.extract.get_data_by_max_pk import Get_Data_By_Max_Pk
@@ -170,31 +171,32 @@ def redshift(job_id, user, pwd, host, port, database, schema, tables, directory,
             get_data_by_max_val_mysql(engine, i, ds, db_information, metadatas)
 
 
-def mysql(job_id: str, user: str, pwd: str, host: str, port: str, database: str, tables: List[str],
-          csv_files_directory: str, cron_expression: str, table_list_uuids: List[str], option: str):
+def mysql(job_id: str, user: str, pwd: str, host: str, port: str, database: str, csv_files_directory: str,
+          table_list_uuids: List[str], option: str, cron_expression: str):
     tables, columns, pks, rule_sets, tables_pk_max, updated_columns = map_table_info(table_list_uuids)
 
-    connection = mysql.connector.connect(host=host, database=database, user=user, password=pwd, use_unicode=True,
+    connection = mysql_connector.connect(host=host, database=database, user=user, password=pwd, use_unicode=True,
                                          charset=option)
 
-    for table, pk, column_list, rule_set, table_pk_max, updated_column in tables, pks, columns, rule_sets, tables_pk_max, updated_columns:
+    for (table, pk, column_list, rule_set, table_pk_max, updated_column) in zip(tables, pks, columns, rule_sets,
+                                                                                tables_pk_max, updated_columns):
         column_list_str = convert_str_list_to_string(column_list)
 
-        if rule_set == Rule_Set.TRUNCATE.value or (rule_set == Rule_Set.MERGE.value and cron_expression == "@once"):
+        if rule_set == Rule_Set.TRUNCATE.value:
 
-            sql_data = (table, column_list_str)
-            extract(Get_Full_table.MYSQL, sql_data, connection, csv_files_directory, job_id, table)
+            sql_data = (table,)
+            extract(Get_Full_table.MYSQL.format(columns=column_list_str), sql_data, connection, csv_files_directory, job_id, table)
 
         elif rule_set == Rule_Set.MERGE.value:
 
             before_time = get_before_update_time(cron_expression)
-            sql_data = (table, column_list_str, updated_column, str(before_time))
-            extract(Get_Data_By_Cron_Expression.MYSQL, sql_data, connection, csv_files_directory, job_id, table)
+            sql_data = (table, updated_column, str(before_time))
+            extract(Get_Data_By_Cron_Expression.MYSQL.format(columns=column_list_str), sql_data, connection, csv_files_directory, job_id, table)
 
         elif rule_set == Rule_Set.INCREASEMENT.value:
 
-            sql_data = (table, column_list_str, pk, table_pk_max)
-            extract(Get_Data_By_Max_Pk.MYSQL, sql_data, connection, csv_files_directory, job_id, table)
+            sql_data = (table, pk, table_pk_max)
+            extract(Get_Data_By_Max_Pk.MYSQL.format(columns=column_list_str), sql_data, connection, csv_files_directory, job_id, table)
 
 
 def get_before_update_time(cron_expression: str) -> datetime:
@@ -205,7 +207,7 @@ def get_before_update_time(cron_expression: str) -> datetime:
 
 def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directory: str, job_id: str, table: str):
     try:
-        cursor = connection.cursor()
+        cursor = connection.cursor(prepared=True)
         cursor.execute(sql_select, sql_data)
         records = cursor.fetchall()
     except Exception as e:
@@ -225,13 +227,13 @@ def map_table_info(table_list_uuids: List[str]) -> ([str], [[str]], [str], [int]
     rule_sets = []
     tables_pk_max = []
     for table_list_uuid in table_list_uuids:
-        table_list = table.find(table_list_uuid)
+        table_list = table_api.find(table_list_uuid)
         column_info = loads(table_list.columns_info)
         tables.append(column_info['table_name'])
         columns.append(column_info['columns'])
         pks.append(column_info['pk'])
         rule_sets.append(column_info['rule_set'])
-        updated_columns.appnend(table_list.updated_at)  # TODO: updated_column
+        updated_columns.append(column_info['update_column_name'])
         tables_pk_max.append(table_list.max_pk)
 
     return tables, columns, pks, rule_sets, tables_pk_max, updated_columns

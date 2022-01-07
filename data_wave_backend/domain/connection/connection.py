@@ -20,7 +20,7 @@ class Connection(Base):
     password = Column(String, nullable=False)
     database = Column(String)
     warehouse = Column(String)
-    option = Column(String, default="?charset=utf8")
+    option = Column(String, default="utf8")
     role = Column(String)
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
     updated_at = Column(DateTime, default=datetime.now(), nullable=False)

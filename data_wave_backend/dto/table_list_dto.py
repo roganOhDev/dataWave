@@ -11,6 +11,7 @@ class Column_Info(BaseModel):
     rule_set: int
     columns: List[str]
     pk: str
+    update_column_name: str
 
 
 class Base_Table_List_Dto(BaseModel):

@@ -18,3 +18,6 @@ class Client:
     class Job:
         job = "job"
         job_using = "job/using"
+
+    class Table:
+        table_list = "table_list"
