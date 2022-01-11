@@ -23,7 +23,6 @@ import mysql.connector as mysql_connector
 import pandas as pd
 import sqlalchemy as sql
 from croniter import croniter
-from mysql.connector.cursor import MySQLCursorPrepared
 
 from common.utils.json_util import loads
 from common.utils.list_converter import convert_str_list_to_string
@@ -184,19 +183,22 @@ def mysql(job_id: str, user: str, pwd: str, host: str, port: str, database: str,
 
         if rule_set == Rule_Set.TRUNCATE.value:
 
-            sql_data = (table,)
-            extract(Get_Full_table.MYSQL.format(columns=column_list_str), sql_data, connection, csv_files_directory, job_id, table)
+            sql_data = ()
+            extract(Get_Full_table.MYSQL.format(columns=column_list_str, table=table), sql_data, connection,
+                    csv_files_directory, job_id, table)
 
         elif rule_set == Rule_Set.MERGE.value:
 
             before_time = get_before_update_time(cron_expression)
-            sql_data = (table, updated_column, str(before_time))
-            extract(Get_Data_By_Cron_Expression.MYSQL.format(columns=column_list_str), sql_data, connection, csv_files_directory, job_id, table)
+            sql_data = (updated_column, str(before_time))
+            extract(Get_Data_By_Cron_Expression.MYSQL.format(columns=column_list_str, table=table), sql_data,
+                    connection, csv_files_directory, job_id, table)
 
         elif rule_set == Rule_Set.INCREASEMENT.value:
 
-            sql_data = (table, pk, table_pk_max)
-            extract(Get_Data_By_Max_Pk.MYSQL.format(columns=column_list_str), sql_data, connection, csv_files_directory, job_id, table)
+            sql_data = (pk, table_pk_max)
+            extract(Get_Data_By_Max_Pk.MYSQL.format(columns=column_list_str, table=table), sql_data, connection,
+                    csv_files_directory, job_id, table)
 
 
 def get_before_update_time(cron_expression: str) -> datetime:
@@ -212,6 +214,8 @@ def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directo
         records = cursor.fetchall()
     except Exception as e:
         raise EngineException(str(e))
+    finally:
+        cursor.close()
 
     data = pd.DataFrame(records)
 

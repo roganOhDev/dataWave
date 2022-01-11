@@ -4,6 +4,6 @@ class Get_Full_table:
     snowflake : column , schema, table
     mysql : column , schema, table
     '''
-    MYSQL = "select {columns} from %s"
-    SNOWFLAKE = "select {columns} from %s.%s"
-    AMAZON = "select {columns} from %s.%s"
+    MYSQL = "select {columns} from {table}"
+    SNOWFLAKE = "select {columns} from {schema}.{table}"
+    AMAZON = "select {columns} from {schema}.{table}"
