@@ -1,0 +1,1 @@
+MYSQL = "create table {table"

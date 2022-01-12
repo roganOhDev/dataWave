@@ -174,7 +174,8 @@ def mysql(job_id: str, user: str, pwd: str, host: str, port: str, database: str,
           table_list_uuids: List[str], option: str, cron_expression: str):
     tables, columns, pks, rule_sets, tables_pk_max, updated_columns = map_table_info(table_list_uuids)
 
-    connection = mysql_connector.connect(host=host, port=port, database=database, user=user, password=pwd, use_unicode=True,
+    connection = mysql_connector.connect(host=host, port=port, database=database, user=user, password=pwd,
+                                         use_unicode=True,
                                          charset=option)
 
     for (table, pk, column_list, rule_set, table_pk_max, updated_column) in zip(tables, pks, columns, rule_sets,
@@ -208,9 +209,11 @@ def get_before_update_time(cron_expression: str) -> datetime:
 
 
 def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directory: str, job_id: str, table: str):
+    field_names = []
     try:
         cursor = connection.cursor(prepared=True)
         cursor.execute(sql_select, sql_data)
+        field_names = [i[0] for i in cursor.description]
         records = cursor.fetchall()
     except Exception as e:
         raise EngineException(str(e))
@@ -219,8 +222,11 @@ def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directo
 
     data = pd.DataFrame(records)
 
-    data.to_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', sep=',', quotechar="'", na_rep='NaN',
-                index=False)
+    with open(csv_files_directory + '/' + job_id + '_' + table + '.csv', mode='w') as file:
+        file.write(convert_str_list_to_string(field_names)+"\n")
+
+    data.to_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', mode='a', sep=',', quotechar="'", na_rep='NaN',
+                index=False, header=False)
 
 
 def map_table_info(table_list_uuids: List[str]) -> ([str], [[str]], [str], [int], [int], [str]):
