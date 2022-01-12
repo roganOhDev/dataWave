@@ -174,7 +174,7 @@ def mysql(job_id: str, user: str, pwd: str, host: str, port: str, database: str,
           table_list_uuids: List[str], option: str, cron_expression: str):
     tables, columns, pks, rule_sets, tables_pk_max, updated_columns = map_table_info(table_list_uuids)
 
-    connection = mysql_connector.connect(host=host, database=database, user=user, password=pwd, use_unicode=True,
+    connection = mysql_connector.connect(host=host, port=port, database=database, user=user, password=pwd, use_unicode=True,
                                          charset=option)
 
     for (table, pk, column_list, rule_set, table_pk_max, updated_column) in zip(tables, pks, columns, rule_sets,
