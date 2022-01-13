@@ -756,10 +756,9 @@ def map_table_info(table_list_uuids: List[str]) -> ([str], [[str]], [int], [int]
 
 
 def validate_columns(new_columns: [str], job_id: str, table: str, engine):
-    indata = pd.read_sql_query('select * from ' + job_id + '_' + table + ' limit 0', engine)
+    before_data = pd.read_sql_query('select * from ' + job_id + '_' + table + ' limit 0', engine)
 
-    before_columns = indata.columns.values
+    before_columns = before_data.columns.values
 
-    for column in new_columns:
-        if column not in before_columns:
-            raise EngineException("a")
+    if set(before_columns) != new_columns:
+        raise EngineException("a")
