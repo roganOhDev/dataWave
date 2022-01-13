@@ -16,6 +16,7 @@ import sqlalchemy as sql
 from common.utils.json_util import loads
 from domain.call_api import table_api
 from domain.enums.elt_map import Rule_Set
+from exception.column_not_match_exception import ColumnNotMatch
 from exception.engine_exception import EngineException
 
 
@@ -761,4 +762,4 @@ def validate_columns(new_columns: [str], job_id: str, table: str, engine):
     before_columns = before_data.columns.values
 
     if set(before_columns) != new_columns:
-        raise EngineException("a")
+        raise ColumnNotMatch()

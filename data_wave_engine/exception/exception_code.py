@@ -7,3 +7,6 @@ class ExceptionCode:
     class Scheduler:
         NOT_EXIST_SCHEDULER_ID = "DWE-0200"
         ALREADY_EXIST_SCHEDULER_ID = "DWE-0200"
+
+    class El:
+        COLUMN_NOT_MATCH = "DWE-0300"
