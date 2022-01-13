@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from common.database import db
 from domain.table import table_composite_service as composite_service
-from dto.table_list_dto import Table_List_Create_Dto,Table_List_Update_Dto, Table_List_Dto
+from dto.table_list_dto import Table_List_Create_Dto, Table_List_Update_Dto, Table_List_Dto
 
 router = APIRouter()
 
@@ -26,13 +26,20 @@ def find(uuid: str, session: Session = Depends(db.session)):
 def create(request: Table_List_Create_Dto, session: Session = Depends(db.session)):
     composite_service.create(request, session)
 
+
 @router.put("/{uuid}/reset_pk")
 def update(uuid: str, request: Table_List_Update_Dto, session: Session = Depends(db.session)):
     composite_service.update(uuid, request, session)
 
+
 @router.put("/{uuid}")
 def update(uuid: str, request: Table_List_Update_Dto, session: Session = Depends(db.session)):
     composite_service.update(uuid, request, session)
+
+
+@router.patch("/{uuid}")
+def update(uuid: str, pk_max: int = Query(None), session: Session = Depends(db.session)):
+    composite_service.update_pk_max(uuid, pk_max, session)
 
 
 @router.delete("")

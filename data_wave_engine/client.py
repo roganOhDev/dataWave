@@ -21,3 +21,4 @@ class Client:
 
     class Table:
         table_list = "table_list"
+        update_pk_max = table_list+"/{uuid}?pk_max={pk_max}"

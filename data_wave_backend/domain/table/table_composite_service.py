@@ -36,6 +36,8 @@ def update(uuid: str, request: Table_List_Update_Dto, session: Session):
 
     table_list_service.save(table_list, session)
 
+def update_pk_max(uuid: str, pk_max: str, session: Session):
+    table_list = table_list_service.find(uuid, session, True)
 
 def delete(uuids: List[str], session: Session):
     for uuid in uuids:
