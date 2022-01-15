@@ -14,7 +14,7 @@ from domain.connection.db_type import Db_Type
 from domain.elt_map import elt_map_service as service
 from domain.elt_map.create_job.db_vendor_raw_code import *
 from domain.elt_map.create_job.job_format import job_format
-from domain.elt_map.cron_expression import Non_Standard_Cron
+from domain.elt_map.cron_expression import NonStandardCron
 from domain.elt_map.elt_map import EltMap
 from domain.job import job_composite_service
 from domain.table import table_composite_service
@@ -152,7 +152,7 @@ def make_data_wave_raw_code(job: JobInfoDto, connection: ConnectionDto, elt_map:
 def translate_cron(cron_expression: str) -> str:
     format = '''minute="{minute}", hour="{hour}", day="{day}", month="{month}", day_of_week="{week_day}"'''
 
-    cron = Non_Standard_Cron(cron_expression).get_cron_expression()
+    cron = NonStandardCron(cron_expression).get_cron_expression()
     cron_instance = Cron(cron)
 
     response = format.format(minute=cron_instance.parts[0],

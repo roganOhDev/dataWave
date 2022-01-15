@@ -4,7 +4,7 @@ from exception.engine_exception import EngineException
 from exception.exception_code import ExceptionCode
 
 
-class ColumnNotMatch(EngineException):
+class ColumnNotMatchException(EngineException):
     def __init__(self):
         self.status_code: int = 500
         self.code: str = ExceptionCode.El.COLUMN_NOT_MATCH

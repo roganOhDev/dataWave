@@ -65,9 +65,13 @@ def fill_scheduler():
     job_ids = elt_map_api.get_activate_job_uuids()
 
     for job_id in job_ids:
-        import_str = "from {0} import {1}".format("elt_jobs." + job_id, "add_job")
-        exec(import_str, globals())
-        add_job()
+        try:
+            import_str = "from {0} import {1}".format("elt_jobs." + job_id, "add_job")
+            exec(import_str, globals())
+            add_job()
+            logger.log("{job_id} added in scheduler".format(job_id=job_id))
+        except Exception as e:
+            logger.error("{job_id} not addedd in scheduler by {error}".format(job_id=job_id, error=str(e)))
 
         # schedules = []
         # for job in sched.get_jobs():

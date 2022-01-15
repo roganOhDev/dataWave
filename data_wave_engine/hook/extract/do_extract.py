@@ -29,11 +29,12 @@ from common.utils.list_converter import convert_str_list_to_string
 from domain.call_api import table_api
 from domain.enums.elt_map import Rule_Set
 from exception.engine_exception import EngineException
-from hook.extract.get_data_by_cron_expression import Get_Data_By_Cron_Expression
+from hook.extract.getdatabycronexpression import GetDataByCronExpression
 from hook.extract.get_data_by_max_pk import Get_Data_By_Max_Pk
 from hook.extract.get_db_info import get_db_info
 from hook.extract.get_full_table import Get_Full_table
 from hook.get_information_from_user.structs import User_All_Data
+from common.utils.logger import logger
 
 
 def snowflake(job_id, user, pwd, account, database, schema, warehouse, tables, directory, columns, pk, upsert, updated,
@@ -192,7 +193,7 @@ def mysql(job_id: str, user: str, pwd: str, host: str, port: str, database: str,
 
             before_time = get_before_update_time(cron_expression)
             sql_data = (updated_column, str(before_time))
-            extract(Get_Data_By_Cron_Expression.MYSQL.format(columns=column_list_str, table=table), sql_data,
+            extract(GetDataByCronExpression.MYSQL.format(columns=column_list_str, table=table), sql_data,
                     connection, csv_files_directory, job_id, table)
 
         elif rule_set == Rule_Set.INCREASEMENT.value:
@@ -209,7 +210,6 @@ def get_before_update_time(cron_expression: str) -> datetime:
 
 
 def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directory: str, job_id: str, table: str):
-    field_names = []
     try:
         cursor = connection.cursor(prepared=True)
         cursor.execute(sql_select, sql_data)
@@ -223,10 +223,12 @@ def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directo
     data = pd.DataFrame(records)
 
     with open(csv_files_directory + '/' + job_id + '_' + table + '.csv', mode='w') as file:
-        file.write(convert_str_list_to_string(field_names)+"\n")
+        file.write(convert_str_list_to_string(field_names) + "\n")
 
-    data.to_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', mode='a', sep=',', quotechar="'", na_rep='NaN',
+    data.to_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', mode='a', sep=',', quotechar="'",
+                na_rep='NaN',
                 index=False, header=False)
+    logger.log("{job_id} extract complete".format(job_id=job_id))
 
 
 def map_table_info(table_list_uuids: List[str]) -> ([str], [[str]], [str], [int], [int], [str]):
