@@ -8,15 +8,18 @@ Available functions:
 - redshift: load data in redshift
 - postgresql: load data in postgresql
 """
-from typing import List
+from typing import List, Any
 
 import pandas as pd
 import sqlalchemy as sql
+from pandas import DataFrame
 
 from common.utils.json_util import loads
 from domain.call_api import table_api
 from domain.enums.elt_map import Rule_Set
-from exception.column_not_match_exception import ColumnNotMatch
+from exception.column_not_match_exception import ColumnNotMatchException
+from common.utils.logger import logger
+from hook.load.behave_if_table_exist import Behave
 from exception.engine_exception import EngineException
 
 
@@ -693,48 +696,55 @@ def mysql(job_id, user, pwd, host, port, database, csv_files_directory, table_li
     ), encoding='utf-8')
 
     tables, columns, rule_sets, tables_pk_max, updated_columns, pks = map_table_info(table_list_uuids)
+
     for (table, column, rule_set, table_pk_max, updated_column, pk, table_list_uuid) in zip(tables, columns, rule_sets,
                                                                                             tables_pk_max,
                                                                                             updated_columns, pks,
                                                                                             table_list_uuids):
         validate_columns(column, job_id, table, engine)
+        csv_data = pd.read_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', sep=',',
+                               quotechar="'")
+
         if rule_set == Rule_Set.TRUNCATE.value:
-            csv_data = pd.read_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', sep=',', quotechar="'")
-            csv_data.to_sql(job_id + '_' + table, engine, if_exists='replace', index=False)
+            load_csv_data(engine, csv_data, job_id, table, Behave.REPLACE)
 
         elif rule_set == Rule_Set.INCREASEMENT.value:
-            csv_data = pd.read_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', sep=',', quotechar="'")
-            csv_data.to_sql(job_id + '_' + table, engine, if_exists='append', index=False)
+            load_csv_data(engine, csv_data, job_id, table, Behave.APPEND)
 
         elif rule_set == Rule_Set.MERGE.value:
             try:
                 engine.execute('select 1 from {job_id}_{table}'.format(job_id=job_id, table=table))
             except:
-                csv_data = pd.read_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', sep=',',
-                                       quotechar="'")
-                csv_data.to_sql(job_id + '_' + table, engine, if_exists='replace', index=False)
+                load_csv_data(engine, csv_data, job_id, table, Behave.REPLACE)
             else:
-                csv_data = pd.read_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', sep=',',
-                                       quotechar="'")
-                csv_data.to_sql(job_id + '_' + table + '_tmp', engine, if_exists='replace', index=False)
+                load_csv_data(engine, csv_data, job_id, table + '_tmp', Behave.REPLACE)
+                query = make_merge_query(column, job_id, table)
 
-                update = ''
-                for one_column in column:
-                    if update:
-                        update = update + ','
-                    update = update + '{column_name}={job_id}_{table}_tmp.{column_name}'.format(column_name=one_column,
-                                                                                                job_id=job_id,
-                                                                                                table=table)
-                query = "insert into {job_id}_{table} select * from {job_id}_{table}_tmp where {job_id}_{table}_tmp.{pk}={pk} on duplicate key update {update}".format(
-                    update=update, pk=pk, table=table, job_id=job_id)
                 engine.execute(query)
                 engine.execute(
                     'drop table if exists {job_id}_{table}_tmp'.format(job_id=job_id, table=table))
 
         table_api.update_pk_max(table_list_uuid, table_pk_max)
+        logger.log("{job_id} load complete".format(job_id=job_id))
 
 
-# mysql 은 기존 머지를 하되 없어진 칼럼은 ''로 하고, 나머지는 increasement 와 같이 처리(increasement와 같이 하는 처리를 먼저해야함)
+def load_csv_data(engine: Any, csv_data: DataFrame, job_id: str, table: str, behave_if_table_exist: Behave):
+    csv_data.to_sql(job_id + '_' + table, engine, if_exists=behave_if_table_exist.get_str(), index=False)
+
+
+def make_merge_query(column: List[str], job_id: str, table: str, pk: str):
+    update = ''
+
+    for one_column in column:
+        if update:
+            update = update + ','
+        update = update + '{column_name}={job_id}_{table}_tmp.{column_name}'.format(column_name=one_column,
+                                                                                    job_id=job_id,
+                                                                                    table=table)
+
+    return "insert into {job_id}_{table} select * from {job_id}_{table}_tmp where {job_id}_{table}_tmp.{pk}={pk} on duplicate key update {update}".format(
+        update=update, pk=pk, table=table, job_id=job_id)
+
 
 def map_table_info(table_list_uuids: List[str]) -> ([str], [[str]], [int], [int], [str], [str]):
     updated_columns = []
@@ -762,4 +772,4 @@ def validate_columns(new_columns: [str], job_id: str, table: str, engine):
     before_columns = before_data.columns.values
 
     if set(before_columns) != new_columns:
-        raise ColumnNotMatch()
+        raise ColumnNotMatchException()
