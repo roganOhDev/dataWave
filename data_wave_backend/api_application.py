@@ -16,6 +16,8 @@ from router import connection_router
 from router import job_router
 from router import elt_map_router
 from router import table_router
+from router import schedule_log_router
+
 import api_server
 
 
@@ -33,6 +35,7 @@ def add_router(app_birth):
     app_birth.include_router(job_router.router, prefix="/job")
     app_birth.include_router(table_router.router, prefix="/table_list")
     app_birth.include_router(elt_map_router.router, prefix="/elt_map")
+    app_birth.include_router(schedule_log_router.router, prefix="/schedule_log")
     return app_birth
 
 
