@@ -15,7 +15,8 @@ from exception.cannot_show_table import CannotShowTable
 from exception.columns_not_include_pk_exception import ColumnsNotIncludePk
 
 
-def create(request: Table_List_Create_Dto, session: Session):
+def create(request: Table_List_Create_Dto, session: Session) -> List[str]:
+    return_uuid = []
     validate(request)
 
     for column_info in request.columns_info:
@@ -25,19 +26,30 @@ def create(request: Table_List_Create_Dto, session: Session):
         list.column_info = json(column_info)
         list.updated_at = datetime.now()
 
+        return_uuid.append(list.uuid)
         table_list_service.save(list, session)
 
+    return return_uuid
 
-def update(uuid: str, request: Table_List_Update_Dto, session: Session):
+
+def update(uuid: str, request: Table_List_Update_Dto, session: Session) -> Table_List_Dto:
     table_list = table_list_service.find(uuid, session, True)
 
-    table_list.max_pk = 0
+    table_list.connection_uuid = request.connection_uuid
+    table_list.column_info = request.column_info
+    table_list.max_pk = request.max_pk
     table_list.updated_at = datetime.now()
 
     table_list_service.save(table_list, session)
+    return of(table_list)
 
-def update_pk_max(uuid: str, pk_max: str, session: Session):
+def update_pk_max(uuid: str, pk_max: int, session: Session) -> Table_List_Dto:
     table_list = table_list_service.find(uuid, session, True)
+
+    table_list.max_pk = pk_max
+
+    table_list_service.save(table_list, session)
+    return of(table_list)
 
 def delete(uuids: List[str], session: Session):
     for uuid in uuids:

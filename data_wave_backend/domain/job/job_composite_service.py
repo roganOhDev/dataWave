@@ -12,12 +12,13 @@ from exception.already_exists_job_id_exception import AlreadyExistsJobIdExceptio
 from exception.not_valid_cron_expression import NotValidCronExpression
 
 
-def save(request: job_info_dto.JobCreateDto, session: Session):
+def save(request: job_info_dto.JobCreateDto, session: Session) -> job_info_dto.JobInfoDto:
     job = job_info(request, session)
     service.save(job, session)
+    return job_info_dto.of(job)
 
 
-def update(uuid: str, request: job_info_dto.JobUpdateDto, session: Session):
+def update(uuid: str, request: job_info_dto.JobUpdateDto, session: Session) -> job_info_dto.JobInfoDto:
     job = service.find_by_uuid(uuid, session, True)
     validate_job(job.schedule_interval, request.job_id, job.id, False, session)
 
@@ -29,6 +30,7 @@ def update(uuid: str, request: job_info_dto.JobUpdateDto, session: Session):
     job.updated_at = datetime.now()
 
     service.save(job, session)
+    return job_info_dto.of(job)
 
 
 def find_by_uuid(uuid: str, session: Session) -> job_info_dto.JobInfoDto:

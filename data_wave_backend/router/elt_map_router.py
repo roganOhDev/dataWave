@@ -21,18 +21,18 @@ def get_activated(session: Session = Depends(db.session)) -> List[str]:
 
 
 @router.put("")
-def create(request: EltMapSaveDto, session: Session = Depends(db.session)):
-    composite_service.create(request, session)
+def create(request: EltMapSaveDto, session: Session = Depends(db.session)) -> EltMapDto:
+    return composite_service.create(request, session)
 
 
 @router.put("/update_activate")
-def update_is_activate(uuid: str, session: Session = Depends(db.session)):
-    composite_service.update_is_activate(uuid, session)
+def update_is_activate(uuid: str, session: Session = Depends(db.session)) -> EltMapDto:
+    return composite_service.update_is_activate(uuid, session)
 
 
 @router.put("/{uuid}")
-def update(uuid: str, request: EltMapSaveDto, session: Session = Depends(db.session)):
-    composite_service.update(uuid, request, session)
+def update(uuid: str, request: EltMapSaveDto, session: Session = Depends(db.session)) -> EltMapDto:
+    return composite_service.update(uuid, request, session)
 
 
 @router.delete("")

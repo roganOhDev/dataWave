@@ -1,3 +1,4 @@
+import datetime
 import traceback
 
 import uvicorn
@@ -67,7 +68,13 @@ def fill_scheduler():
     for job_id in job_ids:
         import_str = "from {0} import {1}".format("elt_jobs." + job_id, "add_job")
         exec(import_str, globals())
-        add_job()
+        try:
+            add_job()
+        except Exception as e:
+            raise EngineException("Error occur")
+        else:
+            logger.info("{job_id} scheduled successfully in ||{now}||".format(job_id=job_id, now=datetime.datetime.now()))
+
 
         # schedules = []
         # for job in sched.get_jobs():

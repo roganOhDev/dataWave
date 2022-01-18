@@ -18,6 +18,7 @@ class Base_Table_List_Dto(BaseModel):
     id: int = None
     uuid: str = None
     connection_uuid: str
+    max_pk: int = 0
     created_at: datetime = None
     updated_at: datetime = None
 

@@ -46,15 +46,17 @@ def find_activated_job_ids(session: Session) -> List[str]:
     return list(map(lambda elt_map: job_composite_service.find_by_uuid(elt_map.job_uuid, session).job_id, elt_maps))
 
 
-def create(request: EltMapSaveDto, session: Session):
+def create(request: EltMapSaveDto, session: Session) -> EltMapDto:
     validate(request, session)
     elt_map = elt_map_info(request, session, EltMap())
     if request.job_uuid:
         job_composite_service.update_job_usage(request, session)
     service.save(elt_map, session)
 
+    return of(elt_map)
 
-def update(uuid: str, request: EltMapSaveDto, session: Session):
+
+def update(uuid: str, request: EltMapSaveDto, session: Session) -> EltMapDto:
     elt_map = service.find(uuid, session, True)
     if elt_map.job_uuid != request.job_uuid:
         validate(request, session)
@@ -63,6 +65,7 @@ def update(uuid: str, request: EltMapSaveDto, session: Session):
     elt_map = elt_map_info(request, session, elt_map)
 
     service.save(elt_map, session)
+    return of(elt_map)
 
 
 def delete(uuids: List[str], session: Session):
@@ -71,7 +74,7 @@ def delete(uuids: List[str], session: Session):
         service.delete(elt_map, session)
 
 
-def update_is_activate(uuid: str, session: Session):
+def update_is_activate(uuid: str, session: Session) -> EltMapDto:
     elt_map = service.find(uuid, session, True)
 
     if not elt_map.active:
@@ -83,6 +86,8 @@ def update_is_activate(uuid: str, session: Session):
 
     elt_map.active = not elt_map.active
     service.save(elt_map, session)
+
+    return of(elt_map)
 
 
 def validate(request: EltMapSaveDto, session: Session):
