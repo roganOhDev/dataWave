@@ -1,5 +1,8 @@
+from typing import List
+
 from sqlalchemy.orm import Session
 
+from common.page.page import Page
 from domain.schedule_log import schedule_log_service as service
 from domain.schedule_log.schedule_log import ScheduleLog
 from domain.schedule_log.schedule_result import ScheduleResult
@@ -19,3 +22,7 @@ def create(request: ScheduleLogSaveDto, session: Session) -> ScheduleLogDto:
     response = service.save(schedule_log, session)
 
     return of(response)
+
+
+def page(pageable: Page, session: Session) -> [ScheduleLogDto]:
+    return map(lambda schedule_log: of(schedule_log), service.page(pageable, session))
