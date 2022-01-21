@@ -13,14 +13,18 @@ from typing import List, Any
 import pandas as pd
 import sqlalchemy as sql
 from pandas import DataFrame
+from datetime import datetime
 
 from common.utils.json_util import loads
-from domain.call_api import table_api
+from domain.call_api import table_api, elt_map_api
+from domain.dto.emt_map_status import EltMapStatus
 from domain.enums.elt_map import Rule_Set
 from exception.column_not_match_exception import ColumnNotMatchException
 from common.utils.logger import logger
-from hook.load.behave_if_table_exist import Behave
 from exception.engine_exception import EngineException
+from hook.load.behave_if_table_exist import Behave
+from domain.call_api import schedule_log_api
+from domain.enums.schedule_result import ScheduleResult
 
 
 def snowflake(job_id, id, pwd, account, database, schema, warehouse, tables, directory, pk, upsert, columns, updated,
@@ -701,31 +705,43 @@ def mysql(job_id, user, pwd, host, port, database, csv_files_directory, table_li
                                                                                             tables_pk_max,
                                                                                             updated_columns, pks,
                                                                                             table_list_uuids):
-        validate_columns(column, job_id, table, engine)
-        csv_data = pd.read_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', sep=',',
-                               quotechar="'")
+        try:
+            validate_columns(column, job_id, table, engine)
+            csv_data = pd.read_csv(csv_files_directory + '/' + job_id + '_' + table + '.csv', sep=',',
+                                   quotechar="'")
 
-        if rule_set == Rule_Set.TRUNCATE.value:
-            load_csv_data(engine, csv_data, job_id, table, Behave.REPLACE)
-
-        elif rule_set == Rule_Set.INCREASEMENT.value:
-            load_csv_data(engine, csv_data, job_id, table, Behave.APPEND)
-
-        elif rule_set == Rule_Set.MERGE.value:
-            try:
-                engine.execute('select 1 from {job_id}_{table}'.format(job_id=job_id, table=table))
-            except:
+            if rule_set == Rule_Set.TRUNCATE.value:
                 load_csv_data(engine, csv_data, job_id, table, Behave.REPLACE)
-            else:
-                load_csv_data(engine, csv_data, job_id, table + '_tmp', Behave.REPLACE)
-                query = make_merge_query(column, job_id, table)
 
-                engine.execute(query)
-                engine.execute(
-                    'drop table if exists {job_id}_{table}_tmp'.format(job_id=job_id, table=table))
+            elif rule_set == Rule_Set.INCREASEMENT.value:
+                load_csv_data(engine, csv_data, job_id, table, Behave.APPEND)
+
+            elif rule_set == Rule_Set.MERGE.value:
+                try:
+                    engine.execute('select 1 from {job_id}_{table}'.format(job_id=job_id, table=table))
+                except:
+                    load_csv_data(engine, csv_data, job_id, table, Behave.REPLACE)
+                else:
+                    load_csv_data(engine, csv_data, job_id, table + '_tmp', Behave.REPLACE)
+                    query = make_merge_query(column, job_id, table)
+
+                    engine.execute(query)
+                    engine.execute(
+                        'drop table if exists {job_id}_{table}_tmp'.format(job_id=job_id, table=table))
+        except EngineException as e:
+            schedule_log_api.create(job_id, ScheduleResult.FAIL, datetime.now(), e.message)
+            elt_map_api.update_status(job_id, EltMapStatus.FAIL)
+            raise e
+
+        except Exception as e:
+            schedule_log_api.create(job_id, ScheduleResult.FAIL, datetime.now(), str(e))
+            elt_map_api.update_status(job_id, EltMapStatus.FAIL)
+            raise EngineException(str(e))
 
         table_api.update_pk_max(table_list_uuid, table_pk_max)
         logger.log("{job_id} load complete".format(job_id=job_id))
+        schedule_log_api.create(job_id, ScheduleResult.SUCCESS, datetime.now())
+        elt_map_api.update_status(job_id, EltMapStatus.SUCCESS)
 
 
 def load_csv_data(engine: Any, csv_data: DataFrame, job_id: str, table: str, behave_if_table_exist: Behave):

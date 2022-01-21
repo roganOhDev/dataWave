@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from common.database import db
 from domain.elt_map import elt_map_composite_service as composite_service
-from dto.elt_map_dto import EltMapDto, EltMapSaveDto
+from dto.elt_map_dto import EltMapDto, EltMapSaveDto, EltMapUpdateStatus
 
 router = APIRouter()
 
@@ -27,6 +27,11 @@ def create(request: EltMapSaveDto, session: Session = Depends(db.session)) -> El
 
 @router.put("/update_activate")
 def update_is_activate(uuid: str, session: Session = Depends(db.session)) -> EltMapDto:
+    return composite_service.update_is_activate(uuid, session)
+
+
+@router.put("/update_status")
+def update_is_activate(uuid: str, request: EltMapUpdateStatus, session: Session = Depends(db.session)) -> EltMapDto:
     return composite_service.update_is_activate(uuid, session)
 
 

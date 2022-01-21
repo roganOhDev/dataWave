@@ -18,10 +18,11 @@ from domain.elt_map.cron_expression import NonStandardCron
 from domain.elt_map.elt_map import EltMap
 from domain.job import job_composite_service
 from domain.table import table_composite_service
-from dto.elt_map_dto import EltMapDto, of, EltMapSaveDto
+from dto.elt_map_dto import EltMapDto, of, EltMapSaveDto, EltMapUpdateStatus
 from exception.caanot_use_this_job_exception import CannotUseThisJobException
 from exception.connections_are_not_equal import ConnectionsAreNotEqual
 from exception.engine_exception import EngineException
+from domain.elt_map.elt_map_status import EltMapStatus
 
 
 def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: EltMap) -> EltMap:
@@ -31,6 +32,7 @@ def elt_map_info(elt_map_info_dto: EltMapSaveDto, session: Session, elt_map: Elt
     elt_map.integrate_connection_uuid = table_list.connection_uuid
     elt_map.destination_connection_uuid = elt_map_info_dto.destination_connection_uuid
     elt_map.table_list_uuids = convert_str_list_to_string(elt_map_info_dto.table_list_uuids)
+    elt_map.status = elt_map_info_dto.status
     elt_map.updated_at = datetime.now()
 
     return elt_map
@@ -78,9 +80,11 @@ def update_is_activate(uuid: str, session: Session) -> EltMapDto:
     elt_map = service.find(uuid, session, True)
 
     if not elt_map.active:
+        elt_map.status = EltMapStatus.WAITING.value
         create_file(elt_map, session)
         add_schedule(elt_map, session)
     else:
+        elt_map.status = EltMapStatus.UNSCHEDULED.value
         delete_file(elt_map, session)
         delete_schedule(elt_map, session)
 
@@ -88,6 +92,15 @@ def update_is_activate(uuid: str, session: Session) -> EltMapDto:
     service.save(elt_map, session)
 
     return of(elt_map)
+
+
+def update_status(request: EltMapUpdateStatus, session: Session) -> EltMapDto:
+    job = job_composite_service.find_all_by_job_id(request.job_id, session)[0]
+    elt_map = service.find_by_job(job.uuid, session)
+    elt_map.status = request.status
+
+    service.save(elt_map)
+    return elt_map
 
 
 def validate(request: EltMapSaveDto, session: Session):

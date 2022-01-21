@@ -16,9 +16,10 @@ def find(uuid: str) -> Table_List_Dto:
 
 
 def get_activate_elt_map_uuids() -> List[str]:
-    response = request_util.get(client.Client.Elt_Map.elt_map_using)
+    response = request_util.get(client.Client.EltMap.elt_map_using)
     return response.json()
-#
+
+
 def update_pk_max(pk_max: int, uuid: str):
     response = request_util.patch(url=client.Client.Table.update_pk_max.format(uuid, pk_max), body={})
     if response.status_code != 200:

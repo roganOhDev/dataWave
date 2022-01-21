@@ -16,6 +16,7 @@ class EltMap(Base):
     destination_connection_uuid = Column(String, ForeignKey('connections.uuid'), nullable=False)
     table_list_uuids = Column(String, ForeignKey('table_list.uuid'), nullable=False)
     active = Column(Boolean, default=False, nullable=False)
+    status = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
     updated_at = Column(DateTime, default=datetime.now(), nullable=False)
 

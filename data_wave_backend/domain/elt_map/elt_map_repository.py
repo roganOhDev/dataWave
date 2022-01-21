@@ -8,8 +8,14 @@ from domain.elt_map.elt_map import EltMap
 def find(uuid: str, session: Session) -> EltMap:
     return session.query(EltMap).filter(EltMap.uuid == uuid).first()
 
+
 def find_all_by_using(session: Session) -> List[EltMap]:
     return session.query(EltMap).filter(EltMap.active).all()
+
+
+def find_by_job(job_uuid: str, session: Session) -> EltMap:
+    return session.query(EltMap).filter(EltMap.job_uuid).first()
+
 
 def save(elt_map: EltMap, session: Session):
     session.add(elt_map)

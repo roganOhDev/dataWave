@@ -26,8 +26,11 @@ from croniter import croniter
 
 from common.utils.json_util import loads
 from common.utils.list_converter import convert_str_list_to_string
-from domain.call_api import table_api
+from domain.call_api import table_api, schedule_log_api
+from domain.dto.emt_map_status import EltMapStatus
 from domain.enums.elt_map import Rule_Set
+from domain.enums.schedule_result import ScheduleResult
+from domain.call_api import elt_map_api
 from exception.engine_exception import EngineException
 from hook.extract.getdatabycronexpression import GetDataByCronExpression
 from hook.extract.get_data_by_max_pk import Get_Data_By_Max_Pk
@@ -173,6 +176,7 @@ def redshift(job_id, user, pwd, host, port, database, schema, tables, directory,
 
 def mysql(job_id: str, user: str, pwd: str, host: str, port: str, database: str, csv_files_directory: str,
           table_list_uuids: List[str], option: str, cron_expression: str):
+    elt_map_api.update_status(job_id, EltMapStatus.EXECUTING)
     tables, columns, pks, rule_sets, tables_pk_max, updated_columns = map_table_info(table_list_uuids)
 
     connection = mysql_connector.connect(host=host, port=port, database=database, user=user, password=pwd,
@@ -215,8 +219,14 @@ def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directo
         cursor.execute(sql_select, sql_data)
         field_names = [i[0] for i in cursor.description]
         records = cursor.fetchall()
+    except EngineException as e:
+        elt_map_api.update_status(job_id, EltMapStatus.FAIL)
+        raise e
+
     except Exception as e:
+        elt_map_api.update_status(job_id, EltMapStatus.FAIL)
         raise EngineException(str(e))
+
     finally:
         cursor.close()
 
@@ -229,6 +239,7 @@ def extract(sql_select: str, sql_data: tuple, connection: Any, csv_files_directo
                 na_rep='NaN',
                 index=False, header=False)
     logger.log("{job_id} extract complete".format(job_id=job_id))
+    elt_map_api.update_status(job_id, EltMapStatus.LOADING)
 
 
 def map_table_info(table_list_uuids: List[str]) -> ([str], [[str]], [str], [int], [int], [str]):

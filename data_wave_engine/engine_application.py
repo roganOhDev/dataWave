@@ -10,6 +10,7 @@ from uvicorn.config import LOGGING_CONFIG
 
 from common.utils.logger import logger
 from domain.call_api import elt_map_api
+from domain.dto.emt_map_status import EltMapStatus
 from exception.engine_exception import EngineException
 from middle.controller import dispatch
 from router import job_router
@@ -74,7 +75,7 @@ def fill_scheduler():
             raise EngineException("Error occur")
         else:
             logger.info("{job_id} scheduled successfully in ||{now}||".format(job_id=job_id, now=datetime.datetime.now()))
-
+            elt_map_api.update_status(job_id, EltMapStatus.SCHEDULED)
 
         # schedules = []
         # for job in sched.get_jobs():

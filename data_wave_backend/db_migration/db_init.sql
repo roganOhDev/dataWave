@@ -29,6 +29,7 @@ CREATE TABLE `elt_maps` (
   `destination_connection_uuid` varchar(255) NOT NULL,
   `table_list_uuids` varchar(255) NOT NULL,
   `active` tinyint NOT NULL,
+  `status` int NOT NULL DEFAULT '0',
   `created_at` datetime(6) NOT NULL,
   `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
@@ -44,6 +45,7 @@ CREATE TABLE `job_infoes` (
   `schedule_interval` varchar(255) NOT NULL,
   `csv_files_directory` varchar(255) NOT NULL,
   `start_date` varchar(255) NOT NULL,
+  `using` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` datetime(6) NOT NULL,
   `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)

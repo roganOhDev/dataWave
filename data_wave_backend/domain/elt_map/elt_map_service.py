@@ -18,6 +18,10 @@ def find_all_by_using(session: Session) -> List[EltMap]:
     return repository.find_all_by_using(session)
 
 
+def find_by_job(job_uuid: str, session: Session) -> EltMap:
+    return repository.find_by_job(job_uuid, session)
+
+
 def save(request: EltMap, session: Session):
     repository.save(request, session)
 

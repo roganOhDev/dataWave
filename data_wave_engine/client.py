@@ -11,8 +11,10 @@ class Client:
     # api_url = get_ip()
     api_url = "http://192.168.35.9:8000/"
 
-    class Elt_Map:
+    class EltMap:
         elt_map = "elt_map"
+        update = elt_map + "/{uuid}"
+        update = elt_map + "/update_status"
         elt_map_using = "elt_map/activated"
 
     class Job:
@@ -21,4 +23,7 @@ class Client:
 
     class Table:
         table_list = "table_list"
-        update_pk_max = table_list+"/{uuid}?pk_max={pk_max}"
+        update_pk_max = table_list + "/{uuid}?pk_max={pk_max}"
+
+    class ScheduleLog:
+        schedule_log = "schedule_log"
